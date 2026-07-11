@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Příspěvky — Klídek a pohoda gaming</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-  <link rel="stylesheet" href="css/styl.css?v=5">
+  <link rel="stylesheet" href="css/styl.css?v=6">
 </head>
 <body>
 
@@ -39,8 +39,10 @@
           <input type="text" id="nadpis" maxlength="120" required>
 
           <label for="text-prispevku">Text</label>
+          <div id="emoji-panel-prispevek" class="emoji-panel" hidden></div>
           <textarea id="text-prispevku" rows="6" required></textarea>
           <p class="napoveda-formatovani">
+            <button type="button" id="emoji-tlacitko-prispevek" class="emoji-tlacitko" title="Smajlíky">😊</button>
             Formátování: <strong>**tučně**</strong>, <em>*kurzíva*</em>,
             řádek začínající „- “ vytvoří odrážku.
           </p>
@@ -59,9 +61,9 @@
     </div>
   </main>
 
-  <script src="js/config.js?v=2"></script>
+  <script src="js/config.js?v=3"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/klient.js?v=2"></script>
-  <script src="js/prispevky.js?v=2"></script>
+  <script src="js/klient.js?v=3"></script>
+  <script src="js/prispevky.js?v=3"></script>
 </body>
 </html>

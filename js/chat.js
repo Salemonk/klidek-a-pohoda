@@ -19,6 +19,7 @@ async function spustStranku() {
   await nactiZpravy();
   pripravOdesilani();
   pripravRealtime();
+  pripravEmojiVyber("emoji-tlacitko-chat", "emoji-panel-chat", "chat-text");
 }
 
 // ---------- Načtení historie ----------

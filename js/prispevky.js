@@ -20,6 +20,7 @@ async function spustStranku() {
   avatary = await nactiAdresyAvataru(profily);
 
   pripravFormular();
+  pripravEmojiVyber("emoji-tlacitko-prispevek", "emoji-panel-prispevek", "text-prispevku");
   await nactiPrispevky();
 }
 

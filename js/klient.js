@@ -79,6 +79,45 @@ async function odhlasit() {
   window.location.href = "index.html";
 }
 
+// ---------- Smajlíky ----------
+
+const ZAKLADNI_EMOJI = [
+  "😀", "😄", "😂", "🤣", "😊", "😉", "😜", "😎", "🤓", "🤔",
+  "😅", "🙃", "😴", "🥱", "😢", "😭", "😡", "🤯", "🥳", "😱",
+  "🙄", "😬", "🤗", "🤫", "😈", "💀", "🤖", "👾", "🐱", "🦥",
+  "👍", "👎", "👌", "✌️", "🤘", "💪", "👏", "🙏", "🤝", "🖖",
+  "❤️", "💙", "🔥", "✨", "⭐", "🎉", "🎮", "🕹️", "🎧", "🏆",
+  "⚔️", "🛡️", "🎯", "🍕", "🍺", "☕",
+];
+
+// Propojí tlačítko 😊, panel se smajlíky a textové pole.
+// Kliknutí na smajlík ho vloží na pozici kurzoru.
+function pripravEmojiVyber(tlacitkoId, panelId, poleId) {
+  const tlacitko = document.getElementById(tlacitkoId);
+  const panel = document.getElementById(panelId);
+  const pole = document.getElementById(poleId);
+  if (!tlacitko || !panel || !pole) return;
+
+  panel.innerHTML = ZAKLADNI_EMOJI
+    .map((e) => `<button type="button" class="emoji-volba">${e}</button>`)
+    .join("");
+
+  tlacitko.addEventListener("click", () => {
+    panel.hidden = !panel.hidden;
+  });
+
+  panel.addEventListener("click", (udalost) => {
+    const volba = udalost.target.closest(".emoji-volba");
+    if (!volba) return;
+    const zacatek = pole.selectionStart ?? pole.value.length;
+    const konec = pole.selectionEnd ?? pole.value.length;
+    pole.value = pole.value.slice(0, zacatek) + volba.textContent + pole.value.slice(konec);
+    const novaPozice = zacatek + volba.textContent.length;
+    pole.focus();
+    pole.setSelectionRange(novaPozice, novaPozice);
+  });
+}
+
 // ---------- Avatary ----------
 
 // Avatary jsou v soukromém úložišti — vyžádá k nim dočasné podepsané

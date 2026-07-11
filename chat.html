@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat — Klídek a pohoda gaming</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-  <link rel="stylesheet" href="css/styl.css?v=5">
+  <link rel="stylesheet" href="css/styl.css?v=6">
 </head>
 <body>
 
@@ -30,7 +30,9 @@
         <p class="nacitani">Načítám zprávy…</p>
       </div>
 
+      <div id="emoji-panel-chat" class="emoji-panel" hidden></div>
       <form id="chat-formular" class="chat-formular">
+        <button type="button" id="emoji-tlacitko-chat" class="emoji-tlacitko" title="Smajlíky">😊</button>
         <input type="text" id="chat-text" maxlength="2000" required
                placeholder="Napiš zprávu…" autocomplete="off">
         <button type="submit" class="tlacitko">Odeslat</button>
@@ -39,9 +41,9 @@
     </div>
   </main>
 
-  <script src="js/config.js?v=2"></script>
+  <script src="js/config.js?v=3"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/klient.js?v=2"></script>
-  <script src="js/chat.js?v=2"></script>
+  <script src="js/klient.js?v=3"></script>
+  <script src="js/chat.js?v=3"></script>
 </body>
 </html>
