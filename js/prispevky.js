@@ -5,6 +5,9 @@
 let mujProfil = null;
 let mojeId = null;
 let profily = {};
+let obrazkyPodleId = {}; // id příspěvku → cesta k obrázku v úložišti
+
+const ULOZISTE = "prispevky-obrazky";
 
 async function spustStranku() {
   const session = await vyzadujPrihlaseni();
@@ -18,11 +21,33 @@ async function spustStranku() {
   await nactiPrispevky();
 }
 
+// ---------- Zmenšení obrázku před nahráním ----------
+// Velké fotky zmenší na max. 1600 px a převede do úsporného JPG,
+// aby se nezaplnilo úložiště a příspěvky se rychle načítaly.
+
+async function zmensiObrazek(soubor, maxRozmer = 1600) {
+  const bitmapa = await createImageBitmap(soubor);
+  const pomer = Math.min(1, maxRozmer / Math.max(bitmapa.width, bitmapa.height));
+  const sirka = Math.round(bitmapa.width * pomer);
+  const vyska = Math.round(bitmapa.height * pomer);
+
+  const platno = document.createElement("canvas");
+  platno.width = sirka;
+  platno.height = vyska;
+  const kreslitko = platno.getContext("2d");
+  kreslitko.fillStyle = "#ffffff"; // podklad pro průhledné PNG
+  kreslitko.fillRect(0, 0, sirka, vyska);
+  kreslitko.drawImage(bitmapa, 0, 0, sirka, vyska);
+
+  return new Promise((hotovo) => platno.toBlob(hotovo, "image/jpeg", 0.85));
+}
+
 // ---------- Vytvoření příspěvku ----------
 
 function pripravFormular() {
   const formular = document.getElementById("formular-prispevek");
   const chyba = document.getElementById("chyba-prispevek");
+  const tlacitko = document.getElementById("tlacitko-zverejnit");
 
   formular.addEventListener("submit", async (udalost) => {
     udalost.preventDefault();
@@ -30,15 +55,49 @@ function pripravFormular() {
 
     const nadpis = document.getElementById("nadpis").value.trim();
     const text = document.getElementById("text-prispevku").value.trim();
+    const soubor = document.getElementById("obrazek-prispevku").files[0];
     if (!nadpis || !text) return;
+
+    tlacitko.disabled = true;
+    tlacitko.textContent = "Zveřejňuji…";
+
+    // Když je přiložený obrázek, nejdřív ho zmenšíme a nahrajeme
+    let cestaObrazku = null;
+    if (soubor) {
+      if (!soubor.type.startsWith("image/")) {
+        zobrazHlasku(chyba, "Přiložený soubor není obrázek.");
+        tlacitko.disabled = false;
+        tlacitko.textContent = "Zveřejnit příspěvek";
+        return;
+      }
+      try {
+        const zmenseny = await zmensiObrazek(soubor);
+        cestaObrazku = `${mojeId}/${Date.now()}.jpg`;
+        const { error: chybaNahrani } = await sb.storage
+          .from(ULOZISTE)
+          .upload(cestaObrazku, zmenseny, { contentType: "image/jpeg" });
+        if (chybaNahrani) throw chybaNahrani;
+      } catch (e) {
+        zobrazHlasku(chyba, "Obrázek se nepodařilo nahrát: " + (e.message || e));
+        tlacitko.disabled = false;
+        tlacitko.textContent = "Zveřejnit příspěvek";
+        return;
+      }
+    }
 
     const { error } = await sb.from("prispevky").insert({
       autor: mojeId,
       nadpis: nadpis,
       text: text,
+      obrazek: cestaObrazku,
     });
 
+    tlacitko.disabled = false;
+    tlacitko.textContent = "Zveřejnit příspěvek";
+
     if (error) {
+      // Příspěvek se neuložil — uklidíme už nahraný obrázek
+      if (cestaObrazku) await sb.storage.from(ULOZISTE).remove([cestaObrazku]);
       zobrazHlasku(chyba, "Příspěvek se nepodařilo uložit: " + error.message);
       return;
     }
@@ -54,7 +113,7 @@ async function nactiPrispevky() {
 
   const { data, error } = await sb
     .from("prispevky")
-    .select("id, autor, nadpis, text, vytvoreno")
+    .select("id, autor, nadpis, text, obrazek, vytvoreno")
     .order("vytvoreno", { ascending: false })
     .limit(50);
 
@@ -70,9 +129,25 @@ async function nactiPrispevky() {
     return;
   }
 
+  // Obrázky jsou v soukromém úložišti — vyžádáme si k nim dočasné
+  // podepsané adresy (platí hodinu, pak si je web vyžádá znovu)
+  obrazkyPodleId = {};
+  const cesty = data.filter((p) => p.obrazek).map((p) => p.obrazek);
+  const adresyObrazku = {};
+  if (cesty.length > 0) {
+    const { data: podepsane } = await sb.storage.from(ULOZISTE).createSignedUrls(cesty, 3600);
+    if (podepsane) {
+      for (const zaznam of podepsane) {
+        if (!zaznam.error) adresyObrazku[zaznam.path] = zaznam.signedUrl;
+      }
+    }
+  }
+
   prvek.innerHTML = data.map((prispevek) => {
     const profil = profily[prispevek.autor];
     const smiSmazat = prispevek.autor === mojeId || (mujProfil && mujProfil.role === "admin");
+    if (prispevek.obrazek) obrazkyPodleId[prispevek.id] = prispevek.obrazek;
+    const adresa = prispevek.obrazek ? adresyObrazku[prispevek.obrazek] : null;
 
     return `
       <article class="prispevek">
@@ -82,6 +157,8 @@ async function nactiPrispevky() {
           ${smiSmazat ? `· <button class="zprava-smazat" onclick="smazPrispevek(${prispevek.id})">smazat</button>` : ""}
         </div>
         <div class="prispevek-text">${formatujText(prispevek.text)}</div>
+        ${adresa ? `<a href="${adresa}" target="_blank" title="Otevřít v plné velikosti">
+          <img class="prispevek-obrazek" src="${adresa}" alt="Obrázek k příspěvku" loading="lazy"></a>` : ""}
       </article>`;
   }).join("");
 }
@@ -96,6 +173,13 @@ async function smazPrispevek(prispevekId) {
     alert("Smazání se nepodařilo: " + error.message);
     return;
   }
+
+  // Uklidíme i případný obrázek z úložiště
+  const cestaObrazku = obrazkyPodleId[prispevekId];
+  if (cestaObrazku) {
+    await sb.storage.from(ULOZISTE).remove([cestaObrazku]);
+  }
+
   await nactiPrispevky();
 }
 

@@ -363,6 +363,35 @@ textarea { resize: vertical; min-height: 100px; }
 .prispevek-text ul { margin: 6px 0 6px 22px; }
 .prispevek-text p { margin-bottom: 6px; }
 
+.prispevek-obrazek {
+  display: block;
+  max-width: 100%;
+  max-height: 420px;
+  border-radius: 10px;
+  margin-top: 10px;
+  border: 1px solid var(--ohraniceni);
+}
+
+input[type="file"] {
+  width: 100%;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  background: var(--panel-svetly);
+  color: var(--text-tlumeny);
+  border: 1px solid var(--ohraniceni);
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+input[type="file"]::file-selector-button {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--ohraniceni);
+  border-radius: 6px;
+  padding: 5px 12px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
 .napoveda-formatovani {
   font-size: 0.85rem;
   color: var(--text-tlumeny);
