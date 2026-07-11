@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ochrana osobních údajů — Klídek a pohoda gaming</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="stylesheet" href="css/styl.css?v=7">
+</head>
+<body>
+
+  <header class="hlavicka">
+    <div class="obsah hlavicka-vnitrek">
+      <a href="index.html" class="logo">🎮 Klídek <span>a pohoda</span></a>
+      <nav class="menu">
+        <a href="index.html">← Zpět na web</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="clenska-stranka">
+    <div class="obsah pravni-text">
+      <h1>Ochrana osobních údajů</h1>
+      <p class="poznamka">Platí od 12. července 2026</p>
+
+      <h2>Kdo jsme</h2>
+      <p>Tento web provozuje herní guilda <strong>Klídek a pohoda gaming</strong> —
+      malá nekomerční parta hráčů. Web slouží členům guildy k domlouvání
+      společných akcí a povídání. Ve věcech osobních údajů nás nejsnáz
+      zastihnete na <a href="#" id="discord-odkaz">našem Discord serveru</a>
+      (napište správci guildy).</p>
+
+      <h2>Jaké údaje zpracováváme a proč</h2>
+      <p>Veřejná část webu žádné osobní údaje nesbírá. Členská sekce
+      (jen pro členy guildy, které správce osobně zná a účet jim založil
+      na jejich žádost) pracuje s těmito údaji:</p>
+      <ul>
+        <li><strong>e-mailová adresa</strong> — slouží výhradně k přihlašování,</li>
+        <li><strong>přezdívka a volitelný avatar</strong> — zobrazují se ostatním členům,</li>
+        <li><strong>obsah, který člen sám vytvoří</strong> — zprávy v chatu, příspěvky
+        na nástěnce, naplánované akce a hlasování o účasti.</li>
+      </ul>
+      <p>Údaje zpracováváme jen pro provoz členské sekce — k ničemu jinému.
+      Nikomu je nepředáváme, neprodáváme a nevyužíváme k reklamě.</p>
+
+      <h2>Kde jsou údaje uložené</h2>
+      <p>Data členské sekce jsou uložena ve službě
+      <a href="https://supabase.com" target="_blank" rel="noopener">Supabase</a>
+      na serverech v Evropské unii. Samotné stránky webu (bez členských dat)
+      hostuje GitHub Pages.</p>
+
+      <h2>Cookies a úložiště prohlížeče</h2>
+      <p>Web nepoužívá žádné sledovací cookies, analytiku ani reklamní
+      technologie. Po přihlášení si prohlížeč ukládá pouze
+      <strong>technický přihlašovací token</strong> (aby členové nemuseli
+      zadávat heslo na každé stránce znovu) — to je technicky nezbytné
+      a žádný souhlas nevyžaduje. Odhlášením se token smaže.</p>
+
+      <h2>Jak dlouho údaje uchováváme</h2>
+      <p>Po dobu členství v guildě. Když členství skončí, správce účet smaže;
+      s ním zmizí profil, avatar a hlasování. Zprávy a příspěvky bývalého
+      člena mohou v členské sekci zůstat (zobrazí se bez autora), na požádání
+      je smažeme také.</p>
+
+      <h2>Vaše práva</h2>
+      <p>Každý člen může:</p>
+      <ul>
+        <li>svou přezdívku a avatar kdykoli změnit přímo na webu,</li>
+        <li>své zprávy a příspěvky sám smazat,</li>
+        <li>požádat správce o výpis, opravu nebo úplné smazání svých údajů —
+        vyřídíme bez zbytečného odkladu,</li>
+        <li>podat stížnost u Úřadu pro ochranu osobních údajů
+        (<a href="https://uoou.gov.cz" target="_blank" rel="noopener">uoou.gov.cz</a>),
+        kdyby se mu zdálo, že s údaji nakládáme špatně.</li>
+      </ul>
+
+      <h2>Změny těchto zásad</h2>
+      <p>Pokud se způsob zpracování údajů změní (třeba přidáním nové funkce
+      webu), upravíme i tuto stránku a členy na to upozorníme.</p>
+    </div>
+  </main>
+
+  <footer class="paticka">
+    <div class="obsah">
+      <p>© 2026 Klídek a pohoda gaming · <a href="index.html">Zpět na hlavní stránku</a></p>
+    </div>
+  </footer>
+
+  <script src="js/config.js?v=3"></script>
+  <script>
+    document.getElementById("discord-odkaz").href = KONFIG.DISCORD_POZVANKA;
+  </script>
+</body>
+</html>
