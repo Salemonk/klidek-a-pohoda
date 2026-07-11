@@ -133,6 +133,12 @@ p + p { margin-top: 0.75rem; }
     var(--pozadi);
 }
 .hero h1 { font-size: clamp(2rem, 6vw, 3.2rem); margin-bottom: 0.5rem; }
+.hero-logo {
+  width: min(300px, 65vw);
+  border-radius: 24px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 40px rgba(79, 209, 165, 0.25);
+}
 .hero-podtitulek { color: var(--text-tlumeny); font-size: 1.2rem; max-width: 550px; margin: 0 auto 1.8rem; }
 .hero-tlacitka { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
 
@@ -169,6 +175,14 @@ p + p { margin-top: 0.75rem; }
 .sekce-tmava h3 { color: var(--text-tlumeny); font-size: 1rem; }
 
 .poznamka { color: var(--text-tlumeny); font-size: 0.9rem; margin-top: 1rem; }
+
+.prihlaseni-obrazek {
+  display: block;
+  width: 110px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  border: 2px solid var(--ohraniceni);
+}
 
 .paticka {
   border-top: 1px solid var(--ohraniceni);

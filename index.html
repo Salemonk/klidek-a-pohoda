@@ -17,7 +17,7 @@
         <a href="#o-nas">O guildě</a>
         <a href="#co-hrajeme">Co hrajeme</a>
         <a href="#pridej-se">Přidej se</a>
-        <a href="prihlaseni.html" class="tlacitko tlacitko-male">Přihlášení člena</a>
+        <a href="prihlaseni.html" id="menu-prihlaseni" class="tlacitko tlacitko-male">Přihlášení člena</a>
       </nav>
     </div>
   </header>
@@ -26,11 +26,12 @@
 
     <section class="hero">
       <div class="obsah">
+        <img src="assets/lenochod-web.jpg" alt="Logo guildy Klídek a pohoda — lenochod se sluchátky a ovladačem" class="hero-logo">
         <h1>Klídek a pohoda gaming</h1>
-        <p class="hero-podtitulek">Hrajeme pro radost. Žádný stres, žádné hádky — prostě klídek a pohoda.</p>
+        <p class="hero-podtitulek">Hrajeme pro radost. Žádný stres, žádné hádky,<br>prostě klídek a pohoda.</p>
         <div class="hero-tlacitka">
           <a href="#pridej-se" class="tlacitko">Chci se přidat</a>
-          <a href="prihlaseni.html" class="tlacitko tlacitko-obrys">Jsem člen — přihlásit</a>
+          <a href="prihlaseni.html" id="hero-prihlaseni" class="tlacitko tlacitko-obrys">Jsem člen — přihlásit</a>
         </div>
       </div>
     </section>
@@ -38,9 +39,15 @@
     <section id="o-nas" class="sekce">
       <div class="obsah">
         <h2>O guildě</h2>
-        <!-- UPRAVTE: sem napište pár vět o vaší guildě -->
-        <p>Jsme malá parta hráčů, která se schází večer po práci a škole. Nejde nám o žebříčky
-        ani o výkony — hlavní je, aby nás hraní bavilo a abychom si u toho odpočinuli.</p>
+        <p>Jsme malá parta hráčů, která se schází večer po práci a o víkendech. Nejde nám o žebříčky,
+        jen o radost z dosažení vlastních cílů! Hlavní je, aby nás hraní bavilo a abychom si u toho odpočinuli.</p>
+        <p>To, že jsme pohodová parta, neznamená, že nemáme rádi pěknou výzvu. Rádi se potrápíme
+        u boss fightu — jen prostě nejedeme do krve. Dokud se u toho bavíme, je to cajk.</p>
+        <p>Věci už dávno nehrotíme, ale najdete u nás i pár veteránů MMORPG legend, jako jsou
+        Lineage, Aion, Guild Wars i WoW. Tisíce hodin skvělé zábavy
+        na těchto i jiných hrách nás táhnou objevovat stále nové tituly a společně čekáme na to jedno
+        MMO, které nám dá důvod oprášit svoje nejlepší dovednosti a zase zapojit hlavu naplno.
+        V tuto chvíli nás nejvíc baví survival craft s dobrým PvE a stabilně Helldivers 2.</p>
         <div class="karty">
           <div class="karta">
             <h3>🕹️ Hrajeme v klidu</h3>
@@ -83,7 +90,7 @@
       <div class="obsah stred">
         <h2>Přidej se k nám</h2>
         <p>Nejjednodušší je skočit na náš Discord a napsat, že máš zájem.
-        Popovídáme si a když si sedneme, správce ti založí členský účet na tomto webu.</p>
+        Popovídáme si a když si sedneme, hlavní lenochod ti založí členský účet na tomto webu.</p>
         <a id="discord-odkaz" href="#" class="tlacitko tlacitko-discord">💬 Náš Discord</a>
         <p class="poznamka">Členská sekce webu obsahuje kalendář akcí, společný chat a nástěnku s příspěvky.</p>
       </div>
@@ -93,7 +100,7 @@
 
   <footer class="paticka">
     <div class="obsah">
-      <p>© 2026 Klídek a pohoda gaming · <a href="prihlaseni.html">Přihlášení pro členy</a></p>
+      <p>© 2026 Klídek a pohoda gaming · <a href="prihlaseni.html" id="paticka-prihlaseni">Přihlášení pro členy</a></p>
     </div>
   </footer>
 
@@ -102,5 +109,7 @@
     // Doplní odkaz na Discord z konfigurace
     document.getElementById("discord-odkaz").href = KONFIG.DISCORD_POZVANKA;
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/verejna.js"></script>
 </body>
 </html>
