@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Akce — Klídek a pohoda gaming</title>
+  <link rel="stylesheet" href="css/styl.css">
+</head>
+<body>
+
+  <header class="hlavicka">
+    <div class="obsah hlavicka-vnitrek">
+      <a href="index.html" class="logo">🎮 Klídek <span>a pohoda</span></a>
+      <nav class="menu">
+        <a href="clenska-sekce.html">Přehled</a>
+        <a href="akce.html" class="aktivni">Akce</a>
+        <a href="chat.html">Chat</a>
+        <a href="prispevky.html">Příspěvky</a>
+        <button class="tlacitko-nenapadne" onclick="odhlasit()">Odhlásit</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="clenska-stranka">
+    <div class="obsah">
+      <h1>📅 Akce guildy</h1>
+
+      <div class="panel-blok">
+        <h2>Naplánovat novou akci</h2>
+        <form id="formular-akce">
+          <label for="nazev-akce">Název akce</label>
+          <input type="text" id="nazev-akce" maxlength="100" required
+                 placeholder="Např. Páteční herní večer">
+
+          <label for="datum-akce">Datum a čas</label>
+          <input type="datetime-local" id="datum-akce" required>
+
+          <label for="popis-akce">Popis (nepovinné)</label>
+          <textarea id="popis-akce" rows="3"
+                    placeholder="Co se bude hrát, kde se sejdeme na Discordu…"></textarea>
+
+          <div id="chyba-akce" class="chyba"></div>
+          <button type="submit" class="tlacitko">Vytvořit akci</button>
+        </form>
+      </div>
+
+      <div class="panel-blok">
+        <h2>Nadcházející akce</h2>
+        <div id="seznam-akci" class="nacitani">Načítám…</div>
+      </div>
+
+      <div class="panel-blok">
+        <h2>Proběhlé akce</h2>
+        <div id="seznam-minulych" class="nacitani">Načítám…</div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/klient.js"></script>
+  <script src="js/akce.js"></script>
+</body>
+</html>

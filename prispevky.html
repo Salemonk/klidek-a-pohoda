@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Příspěvky — Klídek a pohoda gaming</title>
+  <link rel="stylesheet" href="css/styl.css">
+</head>
+<body>
+
+  <header class="hlavicka">
+    <div class="obsah hlavicka-vnitrek">
+      <a href="index.html" class="logo">🎮 Klídek <span>a pohoda</span></a>
+      <nav class="menu">
+        <a href="clenska-sekce.html">Přehled</a>
+        <a href="akce.html">Akce</a>
+        <a href="chat.html">Chat</a>
+        <a href="prispevky.html" class="aktivni">Příspěvky</a>
+        <button class="tlacitko-nenapadne" onclick="odhlasit()">Odhlásit</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="clenska-stranka">
+    <div class="obsah">
+      <h1>📝 Nástěnka příspěvků</h1>
+
+      <div class="panel-blok">
+        <h2>Napsat nový příspěvek</h2>
+        <form id="formular-prispevek">
+          <label for="nadpis">Nadpis</label>
+          <input type="text" id="nadpis" maxlength="120" required>
+
+          <label for="text-prispevku">Text</label>
+          <textarea id="text-prispevku" rows="6" required></textarea>
+          <p class="napoveda-formatovani">
+            Formátování: <strong>**tučně**</strong>, <em>*kurzíva*</em>,
+            řádek začínající „- “ vytvoří odrážku.
+          </p>
+
+          <div id="chyba-prispevek" class="chyba"></div>
+          <button type="submit" class="tlacitko">Zveřejnit příspěvek</button>
+        </form>
+      </div>
+
+      <div id="seznam-prispevku" class="nacitani">Načítám příspěvky…</div>
+
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/klient.js"></script>
+  <script src="js/prispevky.js"></script>
+</body>
+</html>

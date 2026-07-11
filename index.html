@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Klídek a pohoda gaming</title>
+  <meta name="description" content="Herní guilda Klídek a pohoda — hrajeme pro radost, bez stresu a v pohodě.">
+  <link rel="stylesheet" href="css/styl.css">
+</head>
+<body>
+
+  <header class="hlavicka">
+    <div class="obsah hlavicka-vnitrek">
+      <a href="index.html" class="logo">🎮 Klídek <span>a pohoda</span></a>
+      <nav class="menu">
+        <a href="#o-nas">O guildě</a>
+        <a href="#co-hrajeme">Co hrajeme</a>
+        <a href="#pridej-se">Přidej se</a>
+        <a href="prihlaseni.html" class="tlacitko tlacitko-male">Přihlášení člena</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <section class="hero">
+      <div class="obsah">
+        <h1>Klídek a pohoda gaming</h1>
+        <p class="hero-podtitulek">Hrajeme pro radost. Žádný stres, žádné hádky — prostě klídek a pohoda.</p>
+        <div class="hero-tlacitka">
+          <a href="#pridej-se" class="tlacitko">Chci se přidat</a>
+          <a href="prihlaseni.html" class="tlacitko tlacitko-obrys">Jsem člen — přihlásit</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="o-nas" class="sekce">
+      <div class="obsah">
+        <h2>O guildě</h2>
+        <!-- UPRAVTE: sem napište pár vět o vaší guildě -->
+        <p>Jsme malá parta hráčů, která se schází večer po práci a škole. Nejde nám o žebříčky
+        ani o výkony — hlavní je, aby nás hraní bavilo a abychom si u toho odpočinuli.</p>
+        <div class="karty">
+          <div class="karta">
+            <h3>🕹️ Hrajeme v klidu</h3>
+            <p>Nikdo tu na nikoho nekřičí. Když se něco nepovede, zasmějeme se tomu.</p>
+          </div>
+          <div class="karta">
+            <h3>📅 Společné akce</h3>
+            <p>Pravidelné herní večery a občas i něco většího. Členové najdou kalendář akcí v členské sekci.</p>
+          </div>
+          <div class="karta">
+            <h3>🎧 Discord</h3>
+            <p>K povídání při hraní používáme Discord. Přijď si s námi nezávazně pokecat.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="co-hrajeme" class="sekce sekce-tmava">
+      <div class="obsah">
+        <h2>Co hrajeme</h2>
+        <h3>Právě aktivně hrajeme</h3>
+        <ul class="seznam-her">
+          <li class="hra-aktivni">Helldivers 2 <span class="stitek">hrajeme teď</span></li>
+        </ul>
+        <h3 style="margin-top: 1.5rem;">Máme rádi a rádi se k nim vracíme</h3>
+        <ul class="seznam-her">
+          <li>Valheim</li>
+          <li>Enshrouded</li>
+          <li>V Rising</li>
+          <li>Once Human</li>
+          <li>Slay the Spire 2</li>
+          <li>Farever</li>
+          <li>Fellowship</li>
+        </ul>
+        <p class="poznamka">…a cokoli dalšího, na čem se zrovna domluvíme.</p>
+      </div>
+    </section>
+
+    <section id="pridej-se" class="sekce">
+      <div class="obsah stred">
+        <h2>Přidej se k nám</h2>
+        <p>Nejjednodušší je skočit na náš Discord a napsat, že máš zájem.
+        Popovídáme si a když si sedneme, správce ti založí členský účet na tomto webu.</p>
+        <a id="discord-odkaz" href="#" class="tlacitko tlacitko-discord">💬 Náš Discord</a>
+        <p class="poznamka">Členská sekce webu obsahuje kalendář akcí, společný chat a nástěnku s příspěvky.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="paticka">
+    <div class="obsah">
+      <p>© 2026 Klídek a pohoda gaming · <a href="prihlaseni.html">Přihlášení pro členy</a></p>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script>
+    // Doplní odkaz na Discord z konfigurace
+    document.getElementById("discord-odkaz").href = KONFIG.DISCORD_POZVANKA;
+  </script>
+</body>
+</html>

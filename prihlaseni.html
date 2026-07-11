@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Přihlášení — Klídek a pohoda gaming</title>
+  <link rel="stylesheet" href="css/styl.css">
+</head>
+<body>
+
+  <header class="hlavicka">
+    <div class="obsah hlavicka-vnitrek">
+      <a href="index.html" class="logo">🎮 Klídek <span>a pohoda</span></a>
+      <nav class="menu">
+        <a href="index.html">← Zpět na web</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="prihlaseni-obal">
+    <div class="prihlaseni-karta">
+      <h1>Přihlášení člena</h1>
+
+      <div id="chyba" class="chyba"></div>
+
+      <form id="prihlasovaci-formular">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" required autocomplete="username">
+
+        <label for="heslo">Heslo</label>
+        <input type="password" id="heslo" required autocomplete="current-password">
+
+        <button type="submit" class="tlacitko" id="tlacitko-prihlasit">Přihlásit se</button>
+      </form>
+
+      <p class="poznamka">Nemáš účet? Členské účty zakládá správce guildy —
+      napiš mu na Discordu.</p>
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/klient.js"></script>
+  <script src="js/prihlaseni.js"></script>
+</body>
+</html>

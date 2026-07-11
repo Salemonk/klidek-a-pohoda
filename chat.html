@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat — Klídek a pohoda gaming</title>
+  <link rel="stylesheet" href="css/styl.css">
+</head>
+<body>
+
+  <header class="hlavicka">
+    <div class="obsah hlavicka-vnitrek">
+      <a href="index.html" class="logo">🎮 Klídek <span>a pohoda</span></a>
+      <nav class="menu">
+        <a href="clenska-sekce.html">Přehled</a>
+        <a href="akce.html">Akce</a>
+        <a href="chat.html" class="aktivni">Chat</a>
+        <a href="prispevky.html">Příspěvky</a>
+        <button class="tlacitko-nenapadne" onclick="odhlasit()">Odhlásit</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="clenska-stranka">
+    <div class="obsah">
+      <h1>💬 Společný chat</h1>
+
+      <div id="chat-okno" class="chat-okno">
+        <p class="nacitani">Načítám zprávy…</p>
+      </div>
+
+      <form id="chat-formular" class="chat-formular">
+        <input type="text" id="chat-text" maxlength="2000" required
+               placeholder="Napiš zprávu…" autocomplete="off">
+        <button type="submit" class="tlacitko">Odeslat</button>
+      </form>
+      <p class="poznamka">Chat vidí jen přihlášení členové. K hlasové komunikaci používáme Discord.</p>
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/klient.js"></script>
+  <script src="js/chat.js"></script>
+</body>
+</html>

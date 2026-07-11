@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Členská sekce — Klídek a pohoda gaming</title>
+  <link rel="stylesheet" href="css/styl.css">
+</head>
+<body>
+
+  <header class="hlavicka">
+    <div class="obsah hlavicka-vnitrek">
+      <a href="index.html" class="logo">🎮 Klídek <span>a pohoda</span></a>
+      <nav class="menu">
+        <a href="clenska-sekce.html" class="aktivni">Přehled</a>
+        <a href="akce.html">Akce</a>
+        <a href="chat.html">Chat</a>
+        <a href="prispevky.html">Příspěvky</a>
+        <button class="tlacitko-nenapadne" onclick="odhlasit()">Odhlásit</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="clenska-stranka">
+    <div class="obsah">
+      <h1 id="pozdrav">Ahoj!</h1>
+
+      <div class="panel-blok">
+        <h2><span class="ikona">📢</span>Stav guildy
+          <button id="tlacitko-upravit-stav" class="tlacitko-nenapadne" style="display:none; float:right;">Upravit</button>
+        </h2>
+        <div id="stav-guildy" class="nacitani">Načítám…</div>
+        <form id="formular-stav" style="display:none; margin-top:10px;">
+          <textarea id="stav-text" rows="3"></textarea>
+          <button type="submit" class="tlacitko tlacitko-male">Uložit</button>
+          <button type="button" id="tlacitko-zrusit-stav" class="tlacitko-nenapadne">Zrušit</button>
+        </form>
+      </div>
+
+      <div class="panel-blok">
+        <h2><span class="ikona">📅</span>Nejbližší akce</h2>
+        <div id="nejblizsi-akce" class="nacitani">Načítám…</div>
+        <p style="margin-top:12px;"><a href="akce.html">Všechny akce a hlasování o účasti →</a></p>
+      </div>
+
+      <div class="panel-blok">
+        <h2><span class="ikona">👤</span>Můj profil</h2>
+        <form id="formular-prezdivka">
+          <label for="prezdivka">Přezdívka (uvidí ji ostatní v chatu a u příspěvků)</label>
+          <input type="text" id="prezdivka" maxlength="30" required>
+          <div id="uspech-profil" class="uspech"></div>
+          <button type="submit" class="tlacitko tlacitko-male">Uložit přezdívku</button>
+        </form>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/klient.js"></script>
+  <script src="js/clenska-sekce.js"></script>
+</body>
+</html>
