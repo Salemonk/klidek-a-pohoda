@@ -5,6 +5,7 @@
 let mujProfil = null;
 let mojeId = null;
 let profily = {};
+let avatary = {}; // id člena → adresa avataru
 
 async function spustStranku() {
   const session = await vyzadujPrihlaseni();
@@ -13,6 +14,7 @@ async function spustStranku() {
   mojeId = session.user.id;
   mujProfil = await nactiMujProfil(mojeId);
   profily = await nactiVsechnyProfily();
+  avatary = await nactiAdresyAvataru(profily);
 
   await nactiZpravy();
   pripravOdesilani();
@@ -58,6 +60,7 @@ function pridejZpravuDoOkna(zprava) {
   prvek.dataset.zpravaId = zprava.id;
   prvek.innerHTML = `
     <div class="zprava-hlavicka">
+      ${avatarHtml(profil, avatary[zprava.autor])}
       <span class="zprava-autor">${profil ? esc(profil.prezdivka) : "?"}</span>
       <span class="zprava-cas">${formatujCasChatu(zprava.vytvoreno)}</span>
       ${smiSmazat ? `<button class="zprava-smazat" onclick="smazZpravu(${zprava.id})" title="Smazat zprávu">✖</button>` : ""}
@@ -102,6 +105,7 @@ function pripravRealtime() {
         // Kdyby psal někdo, koho ještě neznáme (nový člen), donačteme profily
         if (!profily[payload.new.autor]) {
           profily = await nactiVsechnyProfily();
+          avatary = await nactiAdresyAvataru(profily);
         }
         pridejZpravuDoOkna(payload.new);
         posunDolu();

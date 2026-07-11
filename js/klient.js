@@ -46,11 +46,11 @@ async function vyzadujPrihlaseni() {
   return session;
 }
 
-// Načte profil přihlášeného člena (přezdívka, role)
+// Načte profil přihlášeného člena (přezdívka, role, avatar)
 async function nactiMujProfil(uzivatelId) {
   const { data, error } = await sb
     .from("profily")
-    .select("id, prezdivka, role")
+    .select("id, prezdivka, role, avatar")
     .eq("id", uzivatelId)
     .single();
   if (error) {
@@ -63,7 +63,7 @@ async function nactiMujProfil(uzivatelId) {
 // Načte všechny profily a vrátí je jako mapu { id: profil }
 // (guilda má max. desítky členů, takže je to v pořádku)
 async function nactiVsechnyProfily() {
-  const { data, error } = await sb.from("profily").select("id, prezdivka, role");
+  const { data, error } = await sb.from("profily").select("id, prezdivka, role, avatar");
   if (error) {
     console.error("Nepodařilo se načíst profily:", error);
     return {};
@@ -77,6 +77,79 @@ async function nactiVsechnyProfily() {
 async function odhlasit() {
   await sb.auth.signOut();
   window.location.href = "index.html";
+}
+
+// ---------- Avatary ----------
+
+// Avatary jsou v soukromém úložišti — vyžádá k nim dočasné podepsané
+// adresy a vrátí mapu { idClena: adresa }
+async function nactiAdresyAvataru(profilyMapa) {
+  const sAvatarem = Object.values(profilyMapa).filter((p) => p.avatar);
+  if (sAvatarem.length === 0) return {};
+
+  const { data } = await sb.storage
+    .from("avatary")
+    .createSignedUrls(sAvatarem.map((p) => p.avatar), 3600);
+
+  const podleCesty = {};
+  if (data) {
+    for (const zaznam of data) {
+      if (!zaznam.error) podleCesty[zaznam.path] = zaznam.signedUrl;
+    }
+  }
+  const vysledek = {};
+  for (const profil of sAvatarem) {
+    if (podleCesty[profil.avatar]) vysledek[profil.id] = podleCesty[profil.avatar];
+  }
+  return vysledek;
+}
+
+// Kolečko s avatarem; kdo avatar nemá, dostane první písmeno přezdívky
+function avatarHtml(profil, adresa) {
+  if (adresa) return `<img class="avatar" src="${adresa}" alt="">`;
+  const pismeno = profil && profil.prezdivka ? profil.prezdivka.charAt(0).toUpperCase() : "?";
+  return `<span class="avatar avatar-pismeno">${esc(pismeno)}</span>`;
+}
+
+// ---------- Zmenšení obrázku před nahráním ----------
+// Velké fotky zmenší a převede do úsporného JPG, aby se nezaplnilo
+// úložiště a stránky se rychle načítaly.
+
+async function zmensiObrazek(soubor, maxRozmer = 1600) {
+  const bitmapa = await createImageBitmap(soubor);
+  const pomer = Math.min(1, maxRozmer / Math.max(bitmapa.width, bitmapa.height));
+  const sirka = Math.round(bitmapa.width * pomer);
+  const vyska = Math.round(bitmapa.height * pomer);
+
+  const platno = document.createElement("canvas");
+  platno.width = sirka;
+  platno.height = vyska;
+  const kreslitko = platno.getContext("2d");
+  kreslitko.fillStyle = "#ffffff"; // podklad pro průhledné PNG
+  kreslitko.fillRect(0, 0, sirka, vyska);
+  kreslitko.drawImage(bitmapa, 0, 0, sirka, vyska);
+
+  return new Promise((hotovo) => platno.toBlob(hotovo, "image/jpeg", 0.85));
+}
+
+// Ořízne obrázek na čtverec (střed) a zmenší — pro avatary
+async function pripravAvatar(soubor, hranaVystupu = 256) {
+  const bitmapa = await createImageBitmap(soubor);
+  const hrana = Math.min(bitmapa.width, bitmapa.height);
+
+  const platno = document.createElement("canvas");
+  platno.width = hranaVystupu;
+  platno.height = hranaVystupu;
+  const kreslitko = platno.getContext("2d");
+  kreslitko.fillStyle = "#ffffff";
+  kreslitko.fillRect(0, 0, hranaVystupu, hranaVystupu);
+  kreslitko.drawImage(
+    bitmapa,
+    (bitmapa.width - hrana) / 2, (bitmapa.height - hrana) / 2, hrana, hrana,
+    0, 0, hranaVystupu, hranaVystupu
+  );
+
+  return new Promise((hotovo) => platno.toBlob(hotovo, "image/jpeg", 0.85));
 }
 
 // ---------- Pomocné funkce ----------

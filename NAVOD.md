@@ -128,10 +128,11 @@ Supabase (**Database → Backups**; na bezplatném tarifu denní záloha).
 
 ## Co web zatím neumí (nápady na později)
 
-- Vlastní avatary členů.
+- Zatím nic — nápady jsou vítány. 🙂
 
 ## Doplňkové SQL skripty (spouští se jednorázově v SQL Editoru)
 
 - `supabase/discord-upozorneni.sql` — upozornění na nové akce a příspěvky do
   Discordu (před spuštěním doplňte adresy webhooků).
 - `supabase/obrazky-prispevku.sql` — úložiště pro obrázky u příspěvků.
+- `supabase/avatary.sql` — avatary členů (nastavují si je sami v členské sekci).

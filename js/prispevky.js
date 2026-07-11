@@ -6,6 +6,7 @@ let mujProfil = null;
 let mojeId = null;
 let profily = {};
 let obrazkyPodleId = {}; // id příspěvku → cesta k obrázku v úložišti
+let avatary = {};        // id člena → adresa avataru
 
 const ULOZISTE = "prispevky-obrazky";
 
@@ -16,33 +17,14 @@ async function spustStranku() {
   mojeId = session.user.id;
   mujProfil = await nactiMujProfil(mojeId);
   profily = await nactiVsechnyProfily();
+  avatary = await nactiAdresyAvataru(profily);
 
   pripravFormular();
   await nactiPrispevky();
 }
 
-// ---------- Zmenšení obrázku před nahráním ----------
-// Velké fotky zmenší na max. 1600 px a převede do úsporného JPG,
-// aby se nezaplnilo úložiště a příspěvky se rychle načítaly.
-
-async function zmensiObrazek(soubor, maxRozmer = 1600) {
-  const bitmapa = await createImageBitmap(soubor);
-  const pomer = Math.min(1, maxRozmer / Math.max(bitmapa.width, bitmapa.height));
-  const sirka = Math.round(bitmapa.width * pomer);
-  const vyska = Math.round(bitmapa.height * pomer);
-
-  const platno = document.createElement("canvas");
-  platno.width = sirka;
-  platno.height = vyska;
-  const kreslitko = platno.getContext("2d");
-  kreslitko.fillStyle = "#ffffff"; // podklad pro průhledné PNG
-  kreslitko.fillRect(0, 0, sirka, vyska);
-  kreslitko.drawImage(bitmapa, 0, 0, sirka, vyska);
-
-  return new Promise((hotovo) => platno.toBlob(hotovo, "image/jpeg", 0.85));
-}
-
 // ---------- Vytvoření příspěvku ----------
+// (zmenšování obrázků zajišťuje zmensiObrazek() ve společném klient.js)
 
 function pripravFormular() {
   const formular = document.getElementById("formular-prispevek");
@@ -153,6 +135,7 @@ async function nactiPrispevky() {
       <article class="prispevek">
         <h3>${esc(prispevek.nadpis)}</h3>
         <div class="prispevek-meta">
+          ${avatarHtml(profil, avatary[prispevek.autor])}
           ${profil ? esc(profil.prezdivka) : "?"} · ${formatujDatum(prispevek.vytvoreno)}
           ${smiSmazat ? `· <button class="zprava-smazat" onclick="smazPrispevek(${prispevek.id})">smazat</button>` : ""}
         </div>
