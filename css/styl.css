@@ -446,6 +446,43 @@ input[type="file"]::file-selector-button {
 }
 .emoji-volba:hover { background: var(--panel-svetly); }
 
+/* ---------- Reakce na příspěvky ---------- */
+
+.reakce-radek {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+.reakce-chip {
+  background: var(--panel);
+  border: 1px solid var(--ohraniceni);
+  border-radius: 999px;
+  color: var(--text);
+  padding: 4px 10px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  line-height: 1.3;
+}
+.reakce-chip:hover { border-color: var(--text-tlumeny); }
+.reakce-chip.moje {
+  border-color: var(--akcent);
+  background: rgba(85, 183, 232, 0.15);
+}
+.reakce-pridat {
+  background: none;
+  border: 1px dashed var(--ohraniceni);
+  border-radius: 999px;
+  color: var(--text-tlumeny);
+  padding: 4px 10px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  line-height: 1.3;
+}
+.reakce-pridat:hover { border-color: var(--akcent); color: var(--text); }
+
+#panel-reakci { margin-top: 8px; margin-bottom: 4px; }
+
 /* ---------- Nástěnkářka ---------- */
 
 .nastenkarka {

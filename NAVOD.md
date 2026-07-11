@@ -136,3 +136,4 @@ Supabase (**Database → Backups**; na bezplatném tarifu denní záloha).
   Discordu (před spuštěním doplňte adresy webhooků).
 - `supabase/obrazky-prispevku.sql` — úložiště pro obrázky u příspěvků.
 - `supabase/avatary.sql` — avatary členů (nastavují si je sami v členské sekci).
+- `supabase/reakce.sql` — reakce smajlíkem na příspěvky.

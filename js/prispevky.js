@@ -7,6 +7,7 @@ let mojeId = null;
 let profily = {};
 let obrazkyPodleId = {}; // id příspěvku → cesta k obrázku v úložišti
 let avatary = {};        // id člena → adresa avataru
+let reakcePodleId = {};  // id příspěvku → pole reakcí {clen_id, emoji}
 
 const ULOZISTE = "prispevky-obrazky";
 
@@ -96,7 +97,7 @@ async function nactiPrispevky() {
 
   const { data, error } = await sb
     .from("prispevky")
-    .select("id, autor, nadpis, text, obrazek, vytvoreno")
+    .select("id, autor, nadpis, text, obrazek, vytvoreno, reakce(clen_id, emoji)")
     .order("vytvoreno", { ascending: false })
     .limit(50);
 
@@ -126,11 +127,13 @@ async function nactiPrispevky() {
     }
   }
 
+  reakcePodleId = {};
   prvek.innerHTML = data.map((prispevek) => {
     const profil = profily[prispevek.autor];
     const smiSmazat = prispevek.autor === mojeId || (mujProfil && mujProfil.role === "admin");
     if (prispevek.obrazek) obrazkyPodleId[prispevek.id] = prispevek.obrazek;
     const adresa = prispevek.obrazek ? adresyObrazku[prispevek.obrazek] : null;
+    reakcePodleId[prispevek.id] = prispevek.reakce || [];
 
     return `
       <article class="prispevek">
@@ -143,8 +146,87 @@ async function nactiPrispevky() {
         <div class="prispevek-text">${formatujText(prispevek.text)}</div>
         ${adresa ? `<a href="${adresa}" target="_blank" title="Otevřít v plné velikosti">
           <img class="prispevek-obrazek" src="${adresa}" alt="Obrázek k příspěvku" loading="lazy"></a>` : ""}
+        ${reakceHtml(prispevek)}
       </article>`;
   }).join("");
+}
+
+// ---------- Reakce smajlíkem ----------
+
+// Řádek s reakcemi pod příspěvkem: seskupené smajlíky s počty
+// (moje reakce jsou zvýrazněné) + tlačítko na přidání další
+function reakceHtml(prispevek) {
+  const skupiny = {};
+  for (const reakce of prispevek.reakce || []) {
+    (skupiny[reakce.emoji] = skupiny[reakce.emoji] || []).push(reakce.clen_id);
+  }
+
+  const chipy = Object.entries(skupiny).map(([emoji, clenove]) => {
+    const moje = clenove.includes(mojeId);
+    const jmena = clenove.map((id) => profily[id] ? profily[id].prezdivka : "?").join(", ");
+    return `<button class="reakce-chip ${moje ? "moje" : ""}" title="${esc(jmena)}"
+      onclick="prepniReakci(${prispevek.id}, '${emoji}')">${emoji}&nbsp;${clenove.length}</button>`;
+  }).join("");
+
+  return `<div class="reakce-radek">${chipy}
+    <button class="reakce-pridat" title="Přidat reakci"
+      onclick="otevriPanelReakci(${prispevek.id}, this)">😊+</button></div>`;
+}
+
+// Otevře (nebo schová) panel se smajlíky pod daným příspěvkem
+function otevriPanelReakci(prispevekId, tlacitko) {
+  let panel = document.getElementById("panel-reakci");
+  if (!panel) {
+    panel = document.createElement("div");
+    panel.id = "panel-reakci";
+    panel.className = "emoji-panel";
+    panel.innerHTML = ZAKLADNI_EMOJI
+      .map((e) => `<button type="button" class="emoji-volba">${e}</button>`)
+      .join("");
+    panel.addEventListener("click", async (udalost) => {
+      const volba = udalost.target.closest(".emoji-volba");
+      if (!volba) return;
+      panel.hidden = true;
+      await prepniReakci(panel.dataset.prispevek, volba.textContent);
+    });
+  }
+
+  const radek = tlacitko.closest(".reakce-radek");
+  const uzOtevreny = !panel.hidden && panel.previousElementSibling === radek;
+  if (uzOtevreny) {
+    panel.hidden = true;
+    return;
+  }
+  panel.dataset.prispevek = prispevekId;
+  radek.insertAdjacentElement("afterend", panel);
+  panel.hidden = false;
+}
+
+// Přidá, nebo odebere moji reakci daným smajlíkem
+async function prepniReakci(prispevekId, emoji) {
+  prispevekId = Number(prispevekId);
+  const mojeUzExistuje = (reakcePodleId[prispevekId] || [])
+    .some((r) => r.clen_id === mojeId && r.emoji === emoji);
+
+  let vysledek;
+  if (mojeUzExistuje) {
+    vysledek = await sb.from("reakce").delete()
+      .eq("prispevek_id", prispevekId)
+      .eq("clen_id", mojeId)
+      .eq("emoji", emoji);
+  } else {
+    vysledek = await sb.from("reakce").insert({
+      prispevek_id: prispevekId,
+      clen_id: mojeId,
+      emoji: emoji,
+    });
+  }
+
+  if (vysledek.error) {
+    alert("Reakci se nepodařilo uložit: " + vysledek.error.message);
+    return;
+  }
+  await nactiPrispevky();
 }
 
 // ---------- Smazání příspěvku ----------
