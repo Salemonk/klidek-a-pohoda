@@ -9,9 +9,10 @@
   --ohraniceni: #313952;      /* barva rámečků */
   --text: #e8eaf2;            /* základní text */
   --text-tlumeny: #9aa3bd;    /* vedlejší text */
-  --akcent: #4fd1a5;          /* hlavní zelená — "pohodová" */
-  --akcent-tmavy: #2fa87e;
-  --akcent-2: #f0b357;        /* doplňková teplá žlutá */
+  --akcent: #55b7e8;          /* blankytná modrá — sluchátka lenochoda */
+  --akcent-tmavy: #3494c7;
+  --akcent-2: #f5a83a;        /* jantarová — kruh kolem lenochoda */
+  --text-na-akcentu: #0d2438; /* tmavý text na modrých tlačítkách */
   --chyba: #e57373;
   --discord: #5865f2;
 }
@@ -80,15 +81,15 @@ p + p { margin-top: 0.75rem; }
 }
 .menu a:hover { color: var(--text); }
 .menu a.aktivni { color: var(--akcent); }
-.menu a.tlacitko { color: #0d2a20; }
-.menu a.tlacitko:hover { color: #0d2a20; }
+.menu a.tlacitko { color: var(--text-na-akcentu); }
+.menu a.tlacitko:hover { color: var(--text-na-akcentu); }
 
 /* ---------- Tlačítka ---------- */
 
 .tlacitko {
   display: inline-block;
   background: var(--akcent);
-  color: #0d2a20;
+  color: var(--text-na-akcentu);
   font-weight: 700;
   padding: 10px 22px;
   border-radius: 8px;
@@ -98,7 +99,7 @@ p + p { margin-top: 0.75rem; }
   cursor: pointer;
   transition: background 0.15s;
 }
-.tlacitko:hover { background: var(--akcent-tmavy); color: #0d2a20; }
+.tlacitko:hover { background: var(--akcent-tmavy); color: var(--text-na-akcentu); }
 
 .tlacitko-male { padding: 6px 14px; font-size: 0.9rem; }
 
@@ -107,7 +108,7 @@ p + p { margin-top: 0.75rem; }
   color: var(--akcent);
   border: 2px solid var(--akcent);
 }
-.tlacitko-obrys:hover { background: rgba(79, 209, 165, 0.12); color: var(--akcent); }
+.tlacitko-obrys:hover { background: rgba(85, 183, 232, 0.12); color: var(--akcent); }
 
 .tlacitko-discord { background: var(--discord); color: #fff; }
 .tlacitko-discord:hover { background: #4752c4; color: #fff; }
@@ -129,7 +130,7 @@ p + p { margin-top: 0.75rem; }
   text-align: center;
   padding: 90px 0 70px;
   background:
-    radial-gradient(ellipse at 50% -20%, rgba(79, 209, 165, 0.18), transparent 60%),
+    radial-gradient(ellipse at 50% -20%, rgba(85, 183, 232, 0.16), transparent 60%),
     var(--pozadi);
 }
 .hero h1 { font-size: clamp(2rem, 6vw, 3.2rem); margin-bottom: 0.5rem; }
@@ -137,7 +138,7 @@ p + p { margin-top: 0.75rem; }
   width: min(300px, 65vw);
   border-radius: 24px;
   margin-bottom: 1.5rem;
-  box-shadow: 0 8px 40px rgba(79, 209, 165, 0.25);
+  box-shadow: 0 8px 40px rgba(85, 183, 232, 0.28);
 }
 .hero-podtitulek { color: var(--text-tlumeny); font-size: 1.2rem; max-width: 550px; margin: 0 auto 1.8rem; }
 .hero-tlacitka { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
@@ -222,7 +223,7 @@ textarea { resize: vertical; min-height: 100px; }
 .chyba.viditelna { display: block; }
 
 .uspech {
-  background: rgba(79, 209, 165, 0.12);
+  background: rgba(85, 183, 232, 0.12);
   border: 1px solid var(--akcent);
   color: var(--akcent);
   padding: 10px 14px;
@@ -269,7 +270,7 @@ textarea { resize: vertical; min-height: 100px; }
 
 .stitek {
   display: inline-block;
-  background: rgba(240, 179, 87, 0.15);
+  background: rgba(245, 168, 58, 0.15);
   color: var(--akcent-2);
   font-size: 0.75rem;
   font-weight: 700;
@@ -309,7 +310,7 @@ textarea { resize: vertical; min-height: 100px; }
 .ucast-tlacitko.vybrane {
   background: var(--akcent);
   border-color: var(--akcent);
-  color: #0d2a20;
+  color: var(--text-na-akcentu);
   font-weight: 700;
 }
 .ucast-prehled { margin-top: 10px; font-size: 0.9rem; color: var(--text-tlumeny); }
@@ -398,12 +399,14 @@ input[type="file"]::file-selector-button {
   display: flex;
   align-items: center;
   gap: 22px;
+  border-color: rgba(85, 183, 232, 0.45); /* modrá po vzoru kočičky */
 }
+.nastenkarka strong { color: var(--akcent); }
 .nastenkarka-obrazek {
   width: 170px;
   height: 170px;
   border-radius: 16px;
-  border: 2px solid var(--ohraniceni);
+  border: 2px solid var(--akcent-2); /* jantar po vzoru její stužky */
   flex-shrink: 0;
 }
 .nastenkarka p {
