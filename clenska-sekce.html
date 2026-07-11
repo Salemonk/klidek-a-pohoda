@@ -54,6 +54,21 @@
         </form>
       </div>
 
+      <div class="panel-blok">
+        <h2><span class="ikona">🔑</span>Změna hesla</h2>
+        <form id="formular-heslo">
+          <label for="nove-heslo">Nové heslo (aspoň 6 znaků)</label>
+          <input type="password" id="nove-heslo" minlength="6" required autocomplete="new-password">
+
+          <label for="nove-heslo-znovu">Nové heslo ještě jednou</label>
+          <input type="password" id="nove-heslo-znovu" minlength="6" required autocomplete="new-password">
+
+          <div id="chyba-heslo" class="chyba"></div>
+          <div id="uspech-heslo" class="uspech"></div>
+          <button type="submit" class="tlacitko tlacitko-male">Změnit heslo</button>
+        </form>
+      </div>
+
     </div>
   </main>
 

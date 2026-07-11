@@ -20,6 +20,7 @@ async function spustStranku() {
   await nactiNejblizsiAkce();
   pripravUpravuStavu();
   pripravUpravuPrezdivky(session.user.id);
+  pripravZmenuHesla();
 }
 
 // ---------- Stav guildy ----------
@@ -128,6 +129,44 @@ function pripravUpravuPrezdivky(uzivatelId) {
     }
     document.getElementById("pozdrav").textContent = `Ahoj, ${novaPrezdivka}! 👋`;
     zobrazHlasku(hlaska, "Přezdívka uložena. ✔");
+  });
+}
+
+// ---------- Změna hesla ----------
+
+function pripravZmenuHesla() {
+  const formular = document.getElementById("formular-heslo");
+  const chyba = document.getElementById("chyba-heslo");
+  const uspech = document.getElementById("uspech-heslo");
+
+  formular.addEventListener("submit", async (udalost) => {
+    udalost.preventDefault();
+    skryjHlasku(chyba);
+    skryjHlasku(uspech);
+
+    const nove = document.getElementById("nove-heslo").value;
+    const znovu = document.getElementById("nove-heslo-znovu").value;
+
+    if (nove !== znovu) {
+      zobrazHlasku(chyba, "Hesla se neshodují — zkontrolujte je a zkuste to znovu.");
+      return;
+    }
+
+    const { error } = await sb.auth.updateUser({ password: nove });
+
+    if (error) {
+      if (error.message.includes("should be at least")) {
+        zobrazHlasku(chyba, "Heslo je moc krátké — musí mít aspoň 6 znaků.");
+      } else if (error.message.includes("different from the old")) {
+        zobrazHlasku(chyba, "Nové heslo musí být jiné než to současné.");
+      } else {
+        zobrazHlasku(chyba, "Změna hesla se nepodařila: " + error.message);
+      }
+      return;
+    }
+
+    formular.reset();
+    zobrazHlasku(uspech, "Heslo je změněné. ✔ Při příštím přihlášení už použijte nové.");
   });
 }
 

@@ -58,8 +58,8 @@ Registrace na webu záměrně není — účty zakládáte vy jako správce:
 
 1. V administraci Supabase klikněte vlevo na **Authentication** → **Users**.
 2. Klikněte na **Add user** → **Create new user**.
-3. Vyplňte **e-mail člena** a **heslo** (vymyslete dočasné, člen si ho může
-   nechat — změnu hesla web zatím neumí, viz poznámky níže).
+3. Vyplňte **e-mail člena** a **heslo** (vymyslete dočasné — člen si ho pak
+   může sám změnit v členské sekci, panel „Změna hesla“).
 4. Zaškrtněte **Auto Confirm User** (jinak by systém čekal na potvrzení e-mailem).
 5. Klikněte na **Create user**.
 6. Pošlete členovi (třeba na Discordu) e-mail a heslo + adresu webu.
@@ -106,7 +106,10 @@ Web jsou obyčejné soubory — funguje na jakémkoli hostingu:
 
 ## Časté dotazy
 
-**Člen zapomněl heslo.**
+**Člen si chce změnit heslo.**
+Sám v členské sekci — panel **Změna hesla** na stránce Přehled.
+
+**Člen zapomněl heslo (nemůže se přihlásit).**
 V administraci Supabase: **Authentication → Users →** klikněte na uživatele
 **→ Reset password / Update password** a pošlete mu nové.
 
@@ -125,7 +128,6 @@ Supabase (**Database → Backups**; na bezplatném tarifu denní záloha).
 
 ## Co web zatím neumí (nápady na později)
 
-- Změna hesla přímo na webu (řeší správce přes Supabase).
 - Upozornění na nové akce/zprávy (např. propojení s Discordem přes webhook).
 - Nahrávání obrázků k příspěvkům.
 - Vlastní avatary členů.
