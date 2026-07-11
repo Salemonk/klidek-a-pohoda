@@ -1,5 +1,8 @@
 # Návod: zprovoznění webu Klídek a pohoda gaming
 
+> Technické detaily pro vývojáře (architektura, datový model, konvence)
+> jsou v souboru `DOKUMENTACE.md`. Tento návod je pro správce guildy.
+
 Web má dvě části:
 
 - **Veřejnou** (`index.html`): základní informace o guildě, vidí ji každý.

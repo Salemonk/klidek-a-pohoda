@@ -167,6 +167,7 @@ async function zmensiObrazek(soubor, maxRozmer = 1600) {
   kreslitko.fillStyle = "#ffffff"; // podklad pro průhledné PNG
   kreslitko.fillRect(0, 0, sirka, vyska);
   kreslitko.drawImage(bitmapa, 0, 0, sirka, vyska);
+  bitmapa.close(); // uvolní paměť
 
   return new Promise((hotovo) => platno.toBlob(hotovo, "image/jpeg", 0.85));
 }
@@ -187,6 +188,7 @@ async function pripravAvatar(soubor, hranaVystupu = 256) {
     (bitmapa.width - hrana) / 2, (bitmapa.height - hrana) / 2, hrana, hrana,
     0, 0, hranaVystupu, hranaVystupu
   );
+  bitmapa.close(); // uvolní paměť
 
   return new Promise((hotovo) => platno.toBlob(hotovo, "image/jpeg", 0.85));
 }
