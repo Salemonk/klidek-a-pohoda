@@ -1,5 +1,5 @@
 -- ============================================================
--- Avatary členů — úložiště a sloupec v profilu
+-- Avatary členů: úložiště a sloupec v profilu
 --
 -- POUŽITÍ: celý soubor spusťte v Supabase SQL Editoru (Run).
 --   - avatar si každý člen nahrává a mění sám (jen ten svůj)
@@ -9,7 +9,7 @@
 -- 1) Sloupec pro cestu k avataru v profilu
 alter table public.profily add column if not exists avatar text;
 
--- Členové smí přes web měnit jen přezdívku — přidáme i avatar
+-- Členové smí přes web měnit jen přezdívku, přidáme i avatar
 grant update (avatar) on public.profily to authenticated;
 
 -- 2) Soukromé úložiště avatarů

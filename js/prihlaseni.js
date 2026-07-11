@@ -31,7 +31,7 @@ if (klient) {
       if (error.message.includes("Invalid login credentials")) {
         zobrazHlasku(chyba, "Nesprávný e-mail nebo heslo.");
       } else if (error.message.includes("Email not confirmed")) {
-        zobrazHlasku(chyba, "Účet ještě není potvrzený — ozvi se správci guildy.");
+        zobrazHlasku(chyba, "Účet ještě není potvrzený, ozvi se správci guildy.");
       } else {
         zobrazHlasku(chyba, "Přihlášení se nepodařilo: " + error.message);
       }

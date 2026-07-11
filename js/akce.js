@@ -1,5 +1,5 @@
 // ============================================================
-// Akce guildy — plánování, hlasování o účasti
+// Akce guildy: plánování, hlasování o účasti
 // ============================================================
 
 let mujProfil = null;
@@ -142,7 +142,7 @@ function vykresliMinule(akceSeznam, chyba) {
 
   prvek.innerHTML = akceSeznam.map((akce) => `
     <div class="akce-meta" style="margin-bottom:6px;">
-      ${esc(akce.nazev)} — ${formatujDatum(akce.datum)}
+      ${esc(akce.nazev)} (${formatujDatum(akce.datum)})
     </div>`).join("");
 }
 

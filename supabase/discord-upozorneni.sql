@@ -9,16 +9,16 @@
 -- POUŽITÍ: doplňte adresy webhooků na označená místa (DOPLNTE)
 -- a celý soubor spusťte v Supabase SQL Editoru.
 --
--- POZOR: do verze na GitHubu patří jen tento vzor s "DOPLNTE" —
+-- POZOR: do verze na GitHubu patří jen tento vzor s "DOPLNTE",
 -- skutečné adresy webhooků nikdy neukládejte do veřejného kódu.
 -- ============================================================
 
 
--- 1) Rozšíření pg_net — umožní databázi posílat HTTP požadavky
+-- 1) Rozšíření pg_net: umožní databázi posílat HTTP požadavky
 create extension if not exists pg_net;
 
 
--- 2) Tabulka s adresami webhooků (tajná — žádná RLS pravidla
+-- 2) Tabulka s adresami webhooků (tajná, žádná RLS pravidla
 --    znamenají, že se k ní přes web nikdo nedostane)
 create table if not exists public.webhooky (
   id  text primary key,

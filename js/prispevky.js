@@ -1,5 +1,5 @@
 // ============================================================
-// Nástěnka příspěvků — psaní a čtení příspěvků členů
+// Nástěnka příspěvků: psaní a čtení příspěvků členů
 // ============================================================
 
 let mujProfil = null;
@@ -80,7 +80,7 @@ function pripravFormular() {
     tlacitko.textContent = "Zveřejnit příspěvek";
 
     if (error) {
-      // Příspěvek se neuložil — uklidíme už nahraný obrázek
+      // Příspěvek se neuložil, uklidíme už nahraný obrázek
       if (cestaObrazku) await sb.storage.from(ULOZISTE).remove([cestaObrazku]);
       zobrazHlasku(chyba, "Příspěvek se nepodařilo uložit: " + error.message);
       return;
@@ -113,7 +113,7 @@ async function nactiPrispevky() {
     return;
   }
 
-  // Obrázky jsou v soukromém úložišti — vyžádáme si k nim dočasné
+  // Obrázky jsou v soukromém úložišti, vyžádáme si k nim dočasné
   // podepsané adresy (platí hodinu, pak si je web vyžádá znovu)
   obrazkyPodleId = {};
   const cesty = data.filter((p) => p.obrazek).map((p) => p.obrazek);

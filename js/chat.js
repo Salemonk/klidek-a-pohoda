@@ -1,5 +1,5 @@
 // ============================================================
-// Společný chat členů — zprávy v reálném čase (Supabase Realtime)
+// Společný chat členů: zprávy v reálném čase (Supabase Realtime)
 // ============================================================
 
 let mujProfil = null;

@@ -1,5 +1,5 @@
 -- ============================================================
--- Klídek a pohoda gaming — databázové schéma pro Supabase
+-- Klídek a pohoda gaming: databázové schéma pro Supabase
 --
 -- POUŽITÍ: celý obsah tohoto souboru zkopírujte do SQL editoru
 -- v administraci Supabase (SQL Editor → New query) a spusťte
@@ -19,7 +19,7 @@ create table public.profily (
   vytvoreno  timestamptz not null default now()
 );
 
--- Informace o guildě (jediný řádek — stav, který upravuje admin)
+-- Informace o guildě (jediný řádek, stav, který upravuje admin)
 create table public.guilda (
   id            int primary key default 1 check (id = 1),
   stav          text not null default 'Vše v klidu a pohodě. 🙂',
@@ -129,7 +129,7 @@ create policy "clen upravi svuj profil" on public.profily
   for update to authenticated
   using (id = auth.uid()) with check (id = auth.uid());
 
--- Roli si člen změnit nesmí — povolíme upravovat jen sloupec s přezdívkou
+-- Roli si člen změnit nesmí, povolíme upravovat jen sloupec s přezdívkou
 revoke update on public.profily from authenticated;
 grant update (prezdivka) on public.profily to authenticated;
 

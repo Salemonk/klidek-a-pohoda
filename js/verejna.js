@@ -1,11 +1,11 @@
 // ============================================================
-// Veřejná stránka — když je návštěvník přihlášený člen,
+// Veřejná stránka: když je návštěvník přihlášený člen,
 // promění se přihlašovací tlačítka na vstup do členské sekce.
 // Když přihlášený není (nebo chybí konfigurace), nic se nezmění.
 // ============================================================
 
 (async () => {
-  // Bez vyplněné konfigurace se nic neděje — stránka funguje dál
+  // Bez vyplněné konfigurace se nic neděje, stránka funguje dál
   if (
     typeof KONFIG === "undefined" ||
     !KONFIG.SUPABASE_URL || KONFIG.SUPABASE_URL === "DOPLNTE" ||
@@ -15,7 +15,7 @@
   const klient = window.supabase.createClient(KONFIG.SUPABASE_URL, KONFIG.SUPABASE_ANON_KEY);
 
   const { data: { session } } = await klient.auth.getSession();
-  if (!session) return; // nepřihlášený návštěvník — tlačítka zůstávají
+  if (!session) return; // nepřihlášený návštěvník, tlačítka zůstávají
 
   // Načteme přezdívku (kdyby se nepovedlo, použijeme obecné "člen")
   const { data: profil } = await klient

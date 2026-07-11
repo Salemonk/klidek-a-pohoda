@@ -120,7 +120,7 @@ function pripravEmojiVyber(tlacitkoId, panelId, poleId) {
 
 // ---------- Avatary ----------
 
-// Avatary jsou v soukromém úložišti — vyžádá k nim dočasné podepsané
+// Avatary jsou v soukromém úložišti, vyžádá k nim dočasné podepsané
 // adresy a vrátí mapu { idClena: adresa }
 async function nactiAdresyAvataru(profilyMapa) {
   const sAvatarem = Object.values(profilyMapa).filter((p) => p.avatar);
@@ -171,7 +171,7 @@ async function zmensiObrazek(soubor, maxRozmer = 1600) {
   return new Promise((hotovo) => platno.toBlob(hotovo, "image/jpeg", 0.85));
 }
 
-// Ořízne obrázek na čtverec (střed) a zmenší — pro avatary
+// Ořízne obrázek na čtverec (střed) a zmenší, pro avatary
 async function pripravAvatar(soubor, hranaVystupu = 256) {
   const bitmapa = await createImageBitmap(soubor);
   const hrana = Math.min(bitmapa.width, bitmapa.height);

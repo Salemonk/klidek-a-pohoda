@@ -1,5 +1,5 @@
 // ============================================================
-// Členská sekce — přehled (stav guildy, nejbližší akce, profil)
+// Členská sekce: přehled (stav guildy, nejbližší akce, profil)
 // ============================================================
 
 let mujProfil = null;
@@ -207,7 +207,7 @@ function pripravZmenuHesla() {
     const znovu = document.getElementById("nove-heslo-znovu").value;
 
     if (nove !== znovu) {
-      zobrazHlasku(chyba, "Hesla se neshodují — zkontrolujte je a zkuste to znovu.");
+      zobrazHlasku(chyba, "Hesla se neshodují, zkontrolujte je a zkuste to znovu.");
       return;
     }
 
@@ -215,7 +215,7 @@ function pripravZmenuHesla() {
 
     if (error) {
       if (error.message.includes("should be at least")) {
-        zobrazHlasku(chyba, "Heslo je moc krátké — musí mít aspoň 6 znaků.");
+        zobrazHlasku(chyba, "Heslo je moc krátké, musí mít aspoň 6 znaků.");
       } else if (error.message.includes("different from the old")) {
         zobrazHlasku(chyba, "Nové heslo musí být jiné než to současné.");
       } else {

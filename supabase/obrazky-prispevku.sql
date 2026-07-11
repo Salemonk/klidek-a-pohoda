@@ -1,5 +1,5 @@
 -- ============================================================
--- Obrázky u příspěvků — úložiště (Supabase Storage)
+-- Obrázky u příspěvků: úložiště (Supabase Storage)
 --
 -- POUŽITÍ: celý soubor spusťte v Supabase SQL Editoru (Run).
 -- Vytvoří soukromé úložiště obrázků a pravidla přístupu:
