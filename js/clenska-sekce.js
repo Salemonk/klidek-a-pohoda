@@ -22,6 +22,7 @@ async function spustStranku() {
   pripravUpravuPrezdivky(session.user.id);
   pripravZmenuHesla();
   await pripravSpravuAvataru(session.user.id);
+  await pripravPozvanky();
 }
 
 // ---------- Stav guildy ----------
@@ -189,6 +190,109 @@ async function pripravSpravuAvataru(uzivatelId) {
       zobrazHlasku(chyba, "Avatar se nepodařilo uložit: " + (e.message || e));
     }
   });
+}
+
+// ---------- Pozvánky pro nové členy (jen admin) ----------
+
+// Náhodný kód ve tvaru KP-XXXX-XXXX (bez snadno zaměnitelných znaků)
+function vygenerujKodPozvanky() {
+  const znaky = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const nahodna = crypto.getRandomValues(new Uint8Array(8));
+  let kod = "KP-";
+  for (let i = 0; i < 8; i++) {
+    kod += znaky[nahodna[i] % znaky.length];
+    if (i === 3) kod += "-";
+  }
+  return kod;
+}
+
+async function pripravPozvanky() {
+  if (!mujProfil || mujProfil.role !== "admin") return;
+
+  document.getElementById("panel-pozvanky").style.display = "block";
+  document.getElementById("tlacitko-nova-pozvanka")
+    .addEventListener("click", vytvorPozvanku);
+  await nactiPozvanky();
+}
+
+async function vytvorPozvanku() {
+  const kod = vygenerujKodPozvanky();
+  const { error } = await sb.from("pozvanky").insert({ kod: kod, vytvoril: mujProfil.id });
+
+  if (error) {
+    alert("Pozvánku se nepodařilo vytvořit: " + error.message);
+    return;
+  }
+
+  const odkaz = new URL("registrace.html?kod=" + kod, window.location.href).href;
+  const blok = document.getElementById("nova-pozvanka");
+  blok.style.display = "block";
+  blok.innerHTML = `
+    <p style="margin-top:12px;">Hotovo! Pošlete zájemci tento odkaz:</p>
+    <p class="pozvanka-kod">${esc(odkaz)}</p>
+    <button class="tlacitko tlacitko-male" onclick="zkopirujPozvanku(this)"
+      data-odkaz="${esc(odkaz)}">Zkopírovat odkaz</button>`;
+  await nactiPozvanky();
+}
+
+async function zkopirujPozvanku(tlacitko) {
+  const odkaz = tlacitko.dataset.odkaz;
+  try {
+    await navigator.clipboard.writeText(odkaz);
+    tlacitko.textContent = "Zkopírováno ✔";
+  } catch (e) {
+    prompt("Zkopírujte odkaz ručně:", odkaz);
+  }
+}
+
+async function nactiPozvanky() {
+  const prvek = document.getElementById("seznam-pozvanek");
+  const { data, error } = await sb
+    .from("pozvanky")
+    .select("kod, vytvoreno, plati_do, pouzito, pouzil")
+    .order("vytvoreno", { ascending: false })
+    .limit(20);
+
+  prvek.classList.remove("nacitani");
+
+  if (error) {
+    prvek.textContent = "Pozvánky se nepodařilo načíst. Máte spuštěný skript pozvanky.sql?";
+    return;
+  }
+  if (data.length === 0) {
+    prvek.innerHTML = `<p class="poznamka">Zatím žádná pozvánka.</p>`;
+    return;
+  }
+
+  const profilyMapa = await nactiVsechnyProfily();
+
+  prvek.innerHTML = data.map((pozvanka) => {
+    let stav;
+    if (pozvanka.pouzito) {
+      const profilClena = profilyMapa[pozvanka.pouzil];
+      stav = `✅ použitá (${profilClena ? esc(profilClena.prezdivka) : "?"}, ${formatujDatum(pozvanka.pouzito)})`;
+    } else if (new Date(pozvanka.plati_do) < new Date()) {
+      stav = "⌛ propadlá";
+    } else {
+      stav = `🕐 čeká, platí do ${formatujDatum(pozvanka.plati_do)}`;
+    }
+
+    return `<div class="akce-meta" style="margin-bottom:6px;">
+      <span class="pozvanka-kod-maly">${esc(pozvanka.kod)}</span> ${stav}
+      ${!pozvanka.pouzito ? `· <button class="zprava-smazat" onclick="smazPozvanku('${esc(pozvanka.kod)}')">zrušit</button>` : ""}
+    </div>`;
+  }).join("");
+}
+
+async function smazPozvanku(kod) {
+  if (!confirm("Zrušit pozvánku " + kod + "?")) return;
+
+  const { error } = await sb.from("pozvanky").delete().eq("kod", kod);
+  if (error) {
+    alert("Zrušení se nepodařilo: " + error.message);
+    return;
+  }
+  await nactiPozvanky();
 }
 
 // ---------- Změna hesla ----------

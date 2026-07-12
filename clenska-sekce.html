@@ -6,7 +6,7 @@
   <title>Členská sekce | Klídek a pohoda gaming</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="stylesheet" href="css/styl.css?v=9">
+  <link rel="stylesheet" href="css/styl.css?v=10">
 </head>
 <body>
 
@@ -81,12 +81,22 @@
         </form>
       </div>
 
+      <div class="panel-blok" id="panel-pozvanky" style="display:none;">
+        <h2><span class="ikona">🎟️</span>Pozvánky pro nové členy</h2>
+        <p class="poznamka" style="margin-top:0;">Vytvořte pozvánku a pošlete odkaz zájemci.
+        Zaregistruje se sám, kód platí 7 dní a jen na jedno použití.</p>
+        <button id="tlacitko-nova-pozvanka" class="tlacitko tlacitko-male">Vytvořit pozvánku</button>
+        <div id="nova-pozvanka" style="display:none;"></div>
+        <h3 style="margin-top:16px;">Přehled pozvánek</h3>
+        <div id="seznam-pozvanek" class="nacitani">Načítám…</div>
+      </div>
+
     </div>
   </main>
 
-  <script src="js/config.js?v=7"></script>
+  <script src="js/config.js?v=8"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/klient.js?v=7"></script>
-  <script src="js/clenska-sekce.js?v=7"></script>
+  <script src="js/klient.js?v=8"></script>
+  <script src="js/clenska-sekce.js?v=8"></script>
 </body>
 </html>

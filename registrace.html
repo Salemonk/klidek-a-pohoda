@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Přihlášení | Klídek a pohoda gaming</title>
+  <title>Registrace | Klídek a pohoda gaming</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="css/styl.css?v=10">
@@ -22,30 +22,37 @@
   <main class="prihlaseni-obal">
     <div class="prihlaseni-karta">
       <img src="assets/gamepad-neon-web.jpg" alt="" class="prihlaseni-obrazek" width="360" height="360">
-      <h1>Přihlášení člena</h1>
+      <h1>Registrace člena</h1>
 
       <div id="chyba" class="chyba"></div>
 
-      <form id="prihlasovaci-formular">
+      <form id="registracni-formular">
+        <label for="kod">Pozvánkový kód</label>
+        <input type="text" id="kod" required placeholder="KP-XXXX-XXXX" autocomplete="off">
+
+        <label for="prezdivka">Přezdívka (uvidí ji ostatní členové)</label>
+        <input type="text" id="prezdivka" maxlength="30" required>
+
         <label for="email">E-mail</label>
         <input type="email" id="email" required autocomplete="username">
 
-        <label for="heslo">Heslo</label>
-        <input type="password" id="heslo" required autocomplete="current-password">
+        <label for="heslo">Heslo (aspoň 6 znaků)</label>
+        <input type="password" id="heslo" minlength="6" required autocomplete="new-password">
 
-        <button type="submit" class="tlacitko" id="tlacitko-prihlasit">Přihlásit se</button>
+        <label for="heslo-znovu">Heslo ještě jednou</label>
+        <input type="password" id="heslo-znovu" minlength="6" required autocomplete="new-password">
+
+        <button type="submit" class="tlacitko" id="tlacitko-registrovat">Zaregistrovat se</button>
       </form>
 
-      <p class="poznamka">Nemáš účet? Ozvi se správci guildy o pozvánku.
-      Dostal jsi pozvánkový kód? <a href="registrace.html">Zaregistruj se</a>.</p>
-      <p class="poznamka">Zapomněl jsi heslo? Nic se neděje, ozvi se správci guildy
-      a on ti nastaví nové. Pak si ho v členské sekci můžeš změnit na vlastní.</p>
+      <p class="poznamka">Registrace funguje jen s pozvánkou od správce guildy.
+      Už máš účet? <a href="prihlaseni.html">Přihlas se</a>.</p>
     </div>
   </main>
 
   <script src="js/config.js?v=8"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/klient.js?v=8"></script>
-  <script src="js/prihlaseni.js?v=8"></script>
+  <script src="js/registrace.js?v=8"></script>
 </body>
 </html>

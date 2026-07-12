@@ -395,6 +395,22 @@ input[type="file"]::file-selector-button {
   cursor: pointer;
 }
 
+/* ---------- Pozvánky ---------- */
+
+.pozvanka-kod {
+  font-family: Consolas, monospace;
+  background: var(--panel-svetly);
+  border: 1px solid var(--akcent);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 8px 0;
+  word-break: break-all;
+}
+.pozvanka-kod-maly {
+  font-family: Consolas, monospace;
+  color: var(--akcent);
+}
+
 /* ---------- Upozornění a právní stránka ---------- */
 
 .disclaimer-citace {

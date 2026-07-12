@@ -27,6 +27,7 @@ Frontend s ní komunikuje knihovnou `supabase-js` v2 načítanou z CDN jsdelivr.
 index.html            veřejná stránka (jediná pro nepřihlášené + ochrana-udaju)
 ochrana-udaju.html    zásady ochrany osobních údajů (GDPR), veřejná
 prihlaseni.html       přihlašovací formulář
+registrace.html       registrace nového člena (jen s pozvánkovým kódem)
 clenska-sekce.html    přehled: stav guildy, nejbližší akce, profil, změna hesla
 akce.html             plánování akcí a hlasování o účasti
 chat.html             společný chat (realtime)
@@ -75,7 +76,7 @@ Základ vytváří `supabase/schema.sql`, rozšíření mají vlastní skripty.
 
 | Tabulka     | Účel | Poznámky |
 |-------------|------|----------|
-| `profily`   | přezdívka, `role` (`clen`/`admin`), `avatar` (cesta v bucketu) | PK = `auth.users.id`; řádek vzniká triggerem `po_registraci` při založení účtu |
+| `profily`   | přezdívka, `role` (`clen`/`admin`), `avatar` (cesta v bucketu) | PK = `auth.users.id`; řádek vzniká triggerem `po_registraci` při registraci. Trigger (verze z `pozvanky.sql`) zároveň vyžaduje a spotřebuje platný pozvánkový kód z `raw_user_meta_data.pozvanka`, bez něj registraci odmítne (proto nefunguje ani ruční „Add user“ v administraci) |
 | `guilda`    | jediný řádek (id=1) se `stav` textem | upravuje jen admin |
 | `akce`      | název, popis, `datum` (timestamptz), autor | mazat smí autor nebo admin |
 | `ucast`     | hlasování `jdu`/`mozna`/`nejdu` | PK (akce, člen), upsert |
@@ -83,6 +84,7 @@ Základ vytváří `supabase/schema.sql`, rozšíření mají vlastní skripty.
 | `prispevky` | nadpis, text, `obrazek` (cesta v bucketu) | |
 | `reakce`    | emoji reakce na příspěvky | PK (příspěvek, člen, emoji) |
 | `webhooky`  | adresy Discord webhooků | **tajná**: RLS bez policies, čte ji jen SECURITY DEFINER funkce |
+| `pozvanky`  | jednorázové registrační kódy (platnost 7 dní) | vidí/spravuje jen admin; RPC `over_pozvanku(kod)` smí volat i `anon` a vrací jen ano/ne |
 
 Zabezpečení (RLS):
 

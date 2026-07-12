@@ -55,20 +55,33 @@ nemusíte starat.
 > Data chrání přihlášení a bezpečnostní pravidla v databázi (nastavila se
 > v kroku 2). Nikdy ale nikam nedávejte klíč „service_role“!
 
-## Krok 4: Založení účtů členům
+## Krok 4: Přijímání nových členů (pozvánky)
 
-Registrace na webu záměrně není, účty zakládáte vy jako správce:
+Nové členy zvete jednorázovými pozvánkami přímo z webu, do administrace
+Supabase nemusíte:
 
-1. V administraci Supabase klikněte vlevo na **Authentication** → **Users**.
-2. Klikněte na **Add user** → **Create new user**.
-3. Vyplňte **e-mail člena** a **heslo** (vymyslete dočasné, člen si ho pak
-   může sám změnit v členské sekci, panel „Změna hesla“).
-4. Zaškrtněte **Auto Confirm User** (jinak by systém čekal na potvrzení e-mailem).
-5. Klikněte na **Create user**.
-6. Pošlete členovi (třeba na Discordu) e-mail a heslo + adresu webu.
+1. Přihlaste se na web a na stránce **Přehled** najděte panel
+   **Pozvánky pro nové členy** (vidí ho jen admin).
+2. Klikněte na **Vytvořit pozvánku** a **Zkopírovat odkaz**.
+3. Odkaz pošlete zájemci (třeba na Discordu). Kód platí **7 dní**
+   a jen na **jedno použití**.
+4. Zájemce si na registrační stránce sám zvolí e-mail, heslo i přezdívku
+   a účet je hned na světě.
 
-Profil s přezdívkou se členovi vytvoří automaticky (přezdívka = část e-mailu
-před zavináčem, člen si ji pak může změnit v členské sekci).
+V panelu vidíte přehled pozvánek: které čekají, které propadly a kdo se
+přes kterou zaregistroval. Nevyužitou pozvánku můžete kdykoli zrušit.
+
+> **Jednorázové nastavení před prvním použitím** (v administraci Supabase):
+>
+> 1. Spusťte skript `supabase/pozvanky.sql` v **SQL Editoru**.
+> 2. V **Authentication → Sign In / Up** zkontrolujte, že je zapnuté
+>    **Allow new users to sign up**, a u poskytovatele **Email** vypněte
+>    **Confirm email** (registraci hlídá pozvánka, potvrzovací e-maily
+>    nejsou potřeba).
+>
+> **POZOR:** od té chvíle už nejde založit účet ručně tlačítkem „Add user“
+> v administraci (každá registrace vyžaduje platný kód). Když budete chtít
+> účet založit „ručně“, prostě si vytvořte pozvánku.
 
 ## Krok 5: Nastavení sebe jako admina
 
@@ -140,3 +153,5 @@ Supabase (**Database → Backups**; na bezplatném tarifu denní záloha).
 - `supabase/obrazky-prispevku.sql`: úložiště pro obrázky u příspěvků.
 - `supabase/avatary.sql`: avatary členů (nastavují si je sami v členské sekci).
 - `supabase/reakce.sql`: reakce smajlíkem na příspěvky.
+- `supabase/pozvanky.sql`: registrace nových členů pozvánkovými kódy
+  (viz krok 4; vyžaduje i nastavení v Authentication).
