@@ -276,19 +276,35 @@ function esc(text) {
   }[znak]));
 }
 
+// Z odkazů (http/https) v už OŠETŘENÉM textu udělá klikací odkazy.
+// Pracuje výhradně na výstupu z esc(), takže se nedá zneužít k podstrčení
+// kódu; povolené jsou jen adresy http(s), nikdy třeba "javascript:".
+function linkujOdkazy(escapovanyText) {
+  return escapovanyText.replace(/https?:\/\/[^\s<]+/g, (nalez) => {
+    // Koncovou interpunkci (. , ! ? ) …) necháme mimo odkaz
+    const m = nalez.match(/^(.*?)([.,!?;:)]*)$/);
+    const adresa = m[1];
+    const konec = m[2];
+    return `<a href="${adresa}" target="_blank" rel="noopener">${adresa}</a>${konec}`;
+  });
+}
+
 // Převede text se základním formátováním na HTML:
 //   **tučně**  →  tučné písmo
 //   *kurzíva*  →  kurzíva
 //   řádek začínající "- "  →  odrážka
+//   odkaz http(s)://…      →  klikací odkaz
 function formatujText(text) {
   const radky = String(text).split("\n");
   let html = "";
   let vSeznamu = false;
 
   for (const radek of radky) {
-    const formatovany = esc(radek)
-      .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
-      .replace(/\*([^*]+)\*/g, "<em>$1</em>");
+    const formatovany = linkujOdkazy(
+      esc(radek)
+        .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+        .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+    );
 
     if (radek.startsWith("- ")) {
       if (!vSeznamu) { html += "<ul>"; vSeznamu = true; }

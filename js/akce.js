@@ -196,14 +196,24 @@ async function ulozUpravuAkce(udalost, akceId) {
   const popis = document.getElementById("uprava-popis").value.trim();
   if (!nazev || !datumHodnota) return;
 
-  const { error } = await sb.from("akce")
-    .update({
-      nazev: nazev,
-      datum: new Date(datumHodnota).toISOString(),
-      popis: popis || null,
-      upraveno: new Date().toISOString(),
-    })
-    .eq("id", akceId);
+  const noveDatum = new Date(datumHodnota).toISOString();
+
+  const zmeny = {
+    nazev: nazev,
+    datum: noveDatum,
+    popis: popis || null,
+    upraveno: new Date().toISOString(),
+  };
+
+  // Když se změní datum akce, zapomeneme, že už byla připomínka odeslána,
+  // ať přeplánovaná akce dostane připomínku na nový termín znovu.
+  const puvodni = nacteneAkce.find((a) => a.id === akceId);
+  if (puvodni && new Date(puvodni.datum).toISOString() !== noveDatum) {
+    zmeny.pripomenuto_den = null;
+    zmeny.pripomenuto_hodina = null;
+  }
+
+  const { error } = await sb.from("akce").update(zmeny).eq("id", akceId);
 
   if (error) {
     alert("Úpravu se nepodařilo uložit: " + error.message);

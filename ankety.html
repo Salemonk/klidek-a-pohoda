@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ankety | Klídek a pohoda gaming</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="css/styl.css?v=18">
+</head>
+<body>
+
+  <header class="hlavicka">
+    <div class="obsah hlavicka-vnitrek">
+      <a href="index.html" class="logo">🎮 Klídek <span>a pohoda</span></a>
+      <nav class="menu">
+        <a href="clenska-sekce.html">Přehled</a>
+        <a href="akce.html">Akce</a>
+        <a href="chat.html">Chat</a>
+        <a href="prispevky.html">Příspěvky</a>
+        <a href="ankety.html" class="aktivni">Ankety</a>
+        <button class="tlacitko-nenapadne" onclick="odhlasit()">Odhlásit</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="clenska-stranka">
+    <div class="obsah">
+      <h1>📊 Ankety</h1>
+
+      <div class="panel-blok">
+        <h2>Nová anketa</h2>
+        <form id="formular-anketa">
+          <label for="otazka">Otázka</label>
+          <input type="text" id="otazka" maxlength="200" required
+                 placeholder="Např. Co budeme hrát v pátek?">
+
+          <label>Možnosti</label>
+          <div id="moznosti-pole">
+            <input type="text" class="moznost-vstup" maxlength="100" placeholder="Možnost 1">
+            <input type="text" class="moznost-vstup" maxlength="100" placeholder="Možnost 2">
+          </div>
+          <button type="button" id="pridat-moznost" class="tlacitko-nenapadne">+ přidat možnost</button>
+
+          <div id="chyba-anketa" class="chyba"></div>
+          <button type="submit" class="tlacitko" style="margin-top:12px;">Vytvořit anketu</button>
+        </form>
+      </div>
+
+      <div id="seznam-anket" class="nacitani">Načítám ankety…</div>
+
+    </div>
+  </main>
+
+  <script src="js/config.js?v=14"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/klient.js?v=14"></script>
+  <script src="js/ankety.js?v=14"></script>
+</body>
+</html>

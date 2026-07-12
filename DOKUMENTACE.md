@@ -26,10 +26,12 @@ Frontend s ní komunikuje knihovnou `supabase-js` v2 načítanou z CDN jsdelivr.
 ```
 index.html            veřejná stránka (jediná pro nepřihlášené + ochrana-udaju)
 ochrana-udaju.html    zásady ochrany osobních údajů (GDPR), veřejná
+404.html              chybová stránka (GitHub Pages ji servíruje automaticky)
 prihlaseni.html       přihlašovací formulář
 registrace.html       registrace nového člena (jen s pozvánkovým kódem)
 clenska-sekce.html    přehled: stav guildy, nejbližší akce, profil, změna hesla
 akce.html             plánování akcí a hlasování o účasti
+ankety.html           ankety „co budeme hrát“ s hlasováním
 chat.html             společný chat (realtime)
 prispevky.html        nástěnka: příspěvky s obrázky a reakcemi
 css/styl.css          jediný stylový soubor, barvy přes CSS proměnné v :root
@@ -38,6 +40,7 @@ js/klient.js          sdílený kód (viz níže)
 js/verejna.js         logika veřejných stránek
 js/<stranka>.js       logika jednotlivých členských stránek
 assets/               favicon.svg + obrázky webu (přípona -web = zmenšené JPG)
+assets/fonts/         Nunito (woff2, hostováno lokálně kvůli GDPR, ne Google Fonts)
 supabase/*.sql        skripty pro založení databáze (spouští se ručně, jednou)
 NAVOD.md              provozní návod pro správce (ne-programátora)
 nahrat-na-github.bat  nasazení jedním poklepáním
@@ -61,7 +64,12 @@ pokud má návštěvník v localStorage uložený přihlašovací token
   `innerHTML` musí projít přes `esc()` nebo `formatujText()`**, to je jediná
   ochrana proti XSS.
 - `formatujText(text)` bezpečný mini-markdown: `**tučně**`, `*kurzíva*`,
-  řádek začínající `- ` tvoří odrážku. Nejdřív escapuje, pak formátuje.
+  řádek začínající `- ` tvoří odrážku, http(s) odkazy → klikací. Nejdřív
+  escapuje, pak formátuje a linkuje.
+- `linkujOdkazy(escapovanyText)` z http(s) URL v už escapovaném textu udělá
+  `<a target=_blank rel=noopener>`. Pracuje VÝHRADNĚ na výstupu z esc()
+  (bezpečné proti XSS), povoluje jen http/https (ne javascript:). Používá
+  ho formatujText (příspěvky) i chat.js (zprávy).
 - `formatujDatum`, `formatujCasChatu` české formátování dat.
 - `pripravEmojiVyber(tlacitkoId, panelId, poleId)` panel smajlíků,
   vkládá na pozici kurzoru. Nabídka je v konstantě `ZAKLADNI_EMOJI`.
@@ -90,6 +98,7 @@ Základ vytváří `supabase/schema.sql`, rozšíření mají vlastní skripty.
 | `zpravy`    | chat | realtime publikace `supabase_realtime`; kanál „chat“ v chat.js kombinuje postgres_changes (nové/smazané zprávy) a Presence (online členové: klíč = id člena, `track()` po připojení, event `sync` překresluje řádek nad chatem; bez tabulky a SQL) |
 | `prispevky` | nadpis, text, `obrazek` (cesta v bucketu) | |
 | `reakce`    | emoji reakce na příspěvky | PK (příspěvek, člen, emoji) |
+| `ankety` + `ankety_moznosti` + `ankety_hlasy` | ankety s hlasováním | zakládá každý člen, hlasují všichni (1 hlas/anketa, PK anketa+člen), maže/uzavírá autor nebo vedení; skript `ankety.sql` |
 | `webhooky`  | adresy Discord webhooků | **tajná**: RLS bez policies, čte ji jen SECURITY DEFINER funkce |
 | `pozvanky`  | jednorázové registrační kódy (platnost 7 dní) | vidí/spravuje jen admin; RPC `over_pozvanku(kod)` smí volat i `anon` a vrací jen ano/ne |
 
@@ -124,6 +133,13 @@ Discord upozornění: DB triggery (`ohlas_novou_akci`, `ohlas_novy_prispevek`)
 posílají přes rozšíření `pg_net` zprávu na webhook při INSERTu. Adresy
 webhooků jsou jen v tabulce `webhooky`; v repozitáři je vzor s `DOPLNTE`.
 **Skutečné adresy webhooků nikdy nepatří do repozitáře.**
+
+Připomínky akcí (`pripominky-akci.sql`): `pg_cron` job „pripominky-akci-kap“
+běží každých 15 min a volá `posli_pripominky_akci()`, která rozešle na
+webhook „akce“ připomínku den (3–24 h) a hodinu (do 60 min) před akcí.
+Sloupce `akce.pripomenuto_den` a `akce.pripomenuto_hodina` brání dvojímu
+odeslání; editace akce s novým datem je v akce.js vynuluje (re-remind).
+Časy v Discordu jsou `<t:epoch:R/F>` (relativní/plný, lokalizované u každého).
 
 ## Klíče a tajemství
 

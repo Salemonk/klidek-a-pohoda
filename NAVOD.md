@@ -172,3 +172,7 @@ Supabase (**Database → Backups**; na bezplatném tarifu denní záloha).
   a akcí, práva podle tabulky v kroku 5.
 - `supabase/prehled-clenu.sql`: panel Členové guildy pro admina
   (seznam členů a změna rolí z webu).
+- `supabase/pripominky-akci.sql`: automatické připomínky akcí na Discord
+  (den a hodinu předem). Vyžaduje běžící `discord-upozorneni.sql` a rozšíření
+  pg_cron (pokud se nezapne samo, povolte v Database → Extensions → pg_cron).
+- `supabase/ankety.sql`: ankety s hlasováním (stránka Ankety v členské sekci).

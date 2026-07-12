@@ -66,7 +66,7 @@ function pridejZpravuDoOkna(zprava) {
       <span class="zprava-cas">${formatujCasChatu(zprava.vytvoreno)}</span>
       ${smiSmazat ? `<button class="zprava-smazat" onclick="smazZpravu(${zprava.id})" title="Smazat zprávu">✖</button>` : ""}
     </div>
-    <div class="zprava-text">${esc(zprava.text)}</div>`;
+    <div class="zprava-text">${linkujOdkazy(esc(zprava.text))}</div>`;
   okno.appendChild(prvek);
 }
 

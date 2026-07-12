@@ -2,6 +2,41 @@
    Klídek a pohoda gaming — společný styl celého webu
    ============================================================ */
 
+/* ---------- Písmo Nunito (hostované lokálně, GDPR-čisté) ----------
+   Stažené z fontsource, uložené v assets/fonts. Prohlížeč členů
+   nikdy nekontaktuje Google. latin = základ, latin-ext = české znaky. */
+
+@font-face {
+  font-family: "Nunito"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("../assets/fonts/nunito-latin-400-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: "Nunito"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("../assets/fonts/nunito-latin-ext-400-normal.woff2") format("woff2");
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: "Nunito"; font-style: normal; font-weight: 700; font-display: swap;
+  src: url("../assets/fonts/nunito-latin-700-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: "Nunito"; font-style: normal; font-weight: 700; font-display: swap;
+  src: url("../assets/fonts/nunito-latin-ext-700-normal.woff2") format("woff2");
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: "Nunito"; font-style: normal; font-weight: 800; font-display: swap;
+  src: url("../assets/fonts/nunito-latin-800-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: "Nunito"; font-style: normal; font-weight: 800; font-display: swap;
+  src: url("../assets/fonts/nunito-latin-ext-800-normal.woff2") format("woff2");
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
 :root {
   --pozadi: #12141c;          /* tmavé pozadí stránky */
   --panel: #1b1f2d;           /* pozadí karet a panelů */
@@ -20,12 +55,15 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-family: "Nunito", "Segoe UI", system-ui, -apple-system, sans-serif;
   background: var(--pozadi);
   color: var(--text);
   line-height: 1.6;
   min-height: 100vh;
 }
+
+/* Velké nadpisy a logo v nejtučnějším řezu (hravější vzhled) */
+h1, h2, .logo { font-weight: 800; }
 
 .obsah {
   max-width: 960px;
@@ -211,6 +249,23 @@ p + p { margin-top: 0.75rem; }
   color: var(--text-tlumeny);
   font-size: 0.9rem;
 }
+
+/* ---------- Stránka 404 ---------- */
+
+.chyba404 { text-align: center; max-width: 460px; padding: 20px; }
+.chyba404-obrazek {
+  width: min(200px, 55vw);
+  height: auto;
+  border-radius: 24px;
+  margin-bottom: 1rem;
+  box-shadow: 0 8px 40px rgba(85, 183, 232, 0.28);
+}
+.chyba404 h1 {
+  font-size: clamp(3rem, 12vw, 5rem);
+  color: var(--akcent);
+  margin-bottom: 0.3rem;
+}
+.chyba404-podtitulek { font-size: 1.3rem; margin-bottom: 0.6rem; }
 
 /* ---------- Formuláře ---------- */
 
@@ -413,6 +468,9 @@ textarea { resize: vertical; min-height: 100px; }
 .prispevek-text ul { margin: 6px 0 6px 22px; }
 .prispevek-text p { margin-bottom: 6px; }
 
+/* Klikací odkazy v chatu a příspěvcích, ať dlouhá adresa nepřeteče */
+.zprava-text a, .prispevek-text a { word-break: break-word; }
+
 .prispevek-obrazek {
   display: block;
   max-width: 100%;
@@ -546,6 +604,42 @@ select.volba-role {
   line-height: 1.2;
 }
 .emoji-volba:hover { background: var(--panel-svetly); }
+
+/* ---------- Ankety ---------- */
+
+.anketa-otazka { color: var(--akcent); margin-bottom: 12px; }
+.anketa-moznosti { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+
+.anketa-moznost {
+  position: relative;
+  border: 1px solid var(--ohraniceni);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--panel-svetly);
+}
+.anketa-moznost:not(.uzavrena):hover { border-color: var(--akcent); }
+.anketa-moznost.vybrano { border-color: var(--akcent); }
+.anketa-moznost.uzavrena { cursor: default; }
+
+.anketa-pruh {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  background: rgba(85, 183, 232, 0.22);
+  transition: width 0.3s ease;
+}
+.anketa-moznost.vybrano .anketa-pruh { background: rgba(85, 183, 232, 0.38); }
+
+.anketa-popisek {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+}
+.anketa-pocet { color: var(--text-tlumeny); font-size: 0.9rem; white-space: nowrap; }
+
+.moznost-vstup { display: block; }
 
 /* ---------- Reakce na příspěvky ---------- */
 
