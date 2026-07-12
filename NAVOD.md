@@ -96,23 +96,17 @@ Web má tři role s různými právy:
 | pozvánky pro nové členy | ✖ | ✔ | ✔ |
 | úprava „Stavu guildy“ | ✖ | ✖ | ✔ |
 
-Role se přidělují v **SQL Editoru** (doplňte e-mail dotyčného):
+**Role měníte přímo na webu:** Přehled → panel **Členové guildy** (vidí ho
+jen admin) → v řádku člena vyberte roli. Vlastní roli si změnit nemůžete,
+aby se admin omylem nesesadil.
+
+Jen **úplně první admin** (vy, hned po založení projektu) se nastavuje
+v SQL Editoru:
 
 ```sql
--- povýšení na admina (typicky jen vy)
 update public.profily
 set role = 'admin'
 where id = (select id from auth.users where lower(email) = 'vas@email.cz');
-
--- povýšení na vedení
-update public.profily
-set role = 'vedeni'
-where id = (select id from auth.users where lower(email) = 'clen@email.cz');
-
--- návrat na běžného člena
-update public.profily
-set role = 'clen'
-where id = (select id from auth.users where lower(email) = 'clen@email.cz');
 ```
 
 ## Krok 6: Vyzkoušení
@@ -176,3 +170,5 @@ Supabase (**Database → Backups**; na bezplatném tarifu denní záloha).
   (viz krok 4; vyžaduje i nastavení v Authentication).
 - `supabase/role-vedeni-a-upravy.sql`: role „vedení“, úpravy příspěvků
   a akcí, práva podle tabulky v kroku 5.
+- `supabase/prehled-clenu.sql`: panel Členové guildy pro admina
+  (seznam členů a změna rolí z webu).

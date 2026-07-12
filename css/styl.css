@@ -425,6 +425,42 @@ input[type="file"]::file-selector-button {
   cursor: pointer;
 }
 
+/* ---------- Přehled členů ---------- */
+
+.clen-radek {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ohraniceni);
+}
+.clen-radek:last-of-type { border-bottom: none; }
+.clen-radek .avatar {
+  width: 36px;
+  height: 36px;
+  line-height: 34px;
+  margin-right: 0;
+  flex-shrink: 0;
+}
+.clen-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.poznamka-mala {
+  color: var(--text-tlumeny);
+  font-size: 0.85rem;
+  word-break: break-word;
+}
+
+select.volba-role {
+  background: var(--panel-svetly);
+  color: var(--text);
+  border: 1px solid var(--ohraniceni);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 /* ---------- Pozvánky ---------- */
 
 .pozvanka-kod {

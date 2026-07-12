@@ -23,6 +23,7 @@ async function spustStranku() {
   pripravZmenuHesla();
   await pripravSpravuAvataru(session.user.id);
   await pripravPozvanky();
+  await pripravPrehledClenu();
 }
 
 // ---------- Stav guildy ----------
@@ -183,6 +184,9 @@ async function pripravSpravuAvataru(uzivatelId) {
         .eq("id", uzivatelId);
       if (chybaProfilu) throw chybaProfilu;
 
+      // Soubor na stejné cestě se změnil, zapomeneme starou adresu,
+      // ať se hned ukáže nový avatar (a ne ten z paměti)
+      zapomenAdresu("avatary", cesta);
       mujProfil.avatar = cesta;
       formular.reset();
       await obnovNahledAvataru();
@@ -294,6 +298,88 @@ async function smazPozvanku(kod) {
     return;
   }
   await nactiPozvanky();
+}
+
+// ---------- Přehled členů (jen admin) ----------
+
+let nacteniClenove = []; // naposledy načtený seznam členů
+
+const POPISKY_ROLI = { clen: "člen", vedeni: "vedení", admin: "admin" };
+
+function formatujDatumKratce(iso) {
+  return new Date(iso).toLocaleDateString("cs-CZ");
+}
+
+async function pripravPrehledClenu() {
+  if (!mujProfil || mujProfil.role !== "admin") return;
+
+  document.getElementById("panel-clenove").style.display = "block";
+  await nactiPrehledClenu();
+}
+
+async function nactiPrehledClenu() {
+  const prvek = document.getElementById("seznam-clenu");
+  const { data, error } = await sb.rpc("seznam_clenu");
+
+  prvek.classList.remove("nacitani");
+
+  if (error) {
+    prvek.textContent = "Členy se nepodařilo načíst. Máte spuštěný skript prehled-clenu.sql?";
+    return;
+  }
+  if (!data || data.length === 0) {
+    prvek.textContent = "Žádní členové.";
+    return;
+  }
+
+  nacteniClenove = data;
+  const mapaProfilu = {};
+  for (const clen of data) mapaProfilu[clen.id] = clen;
+  const adresyAvataru = await nactiAdresyAvataru(mapaProfilu);
+
+  prvek.innerHTML = data.map((clen) => {
+    const jaSam = clen.id === mujProfil.id;
+    const volbaRole = jaSam
+      ? `<span class="stitek">${POPISKY_ROLI[clen.role]} (vy)</span>`
+      : `<select class="volba-role" onchange="zmenRoli('${clen.id}', this)">
+          ${["clen", "vedeni", "admin"].map((role) =>
+            `<option value="${role}" ${role === clen.role ? "selected" : ""}>${POPISKY_ROLI[role]}</option>`
+          ).join("")}
+        </select>`;
+
+    return `
+      <div class="clen-radek">
+        ${avatarHtml(clen, adresyAvataru[clen.id])}
+        <div class="clen-info">
+          <strong>${esc(clen.prezdivka)}</strong>
+          <span class="poznamka-mala">${esc(clen.email)}
+            · členem od ${formatujDatumKratce(clen.clenem_od)}
+            · naposledy přihlášen ${clen.posledni_prihlaseni ? formatujDatumKratce(clen.posledni_prihlaseni) : "nikdy"}</span>
+        </div>
+        ${volbaRole}
+      </div>`;
+  }).join("");
+}
+
+async function zmenRoli(clenId, vyber) {
+  const clen = nacteniClenove.find((c) => c.id === clenId);
+  const jmeno = clen ? clen.prezdivka : "?";
+  const novaRole = vyber.value;
+
+  if (!confirm(`Změnit roli člena „${jmeno}“ na ${POPISKY_ROLI[novaRole]}?`)) {
+    await nactiPrehledClenu(); // vrátí výběr do původního stavu
+    return;
+  }
+
+  const { error } = await sb.rpc("nastav_roli", {
+    clen_id: clenId,
+    nova_role: novaRole,
+  });
+
+  if (error) {
+    alert("Změnu role se nepodařilo uložit: " + error.message);
+  }
+  await nactiPrehledClenu();
 }
 
 // ---------- Změna hesla ----------

@@ -6,7 +6,7 @@
   <title>Členská sekce | Klídek a pohoda gaming</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="stylesheet" href="css/styl.css?v=11">
+  <link rel="stylesheet" href="css/styl.css?v=12">
 </head>
 <body>
 
@@ -91,12 +91,19 @@
         <div id="seznam-pozvanek" class="nacitani">Načítám…</div>
       </div>
 
+      <div class="panel-blok" id="panel-clenove" style="display:none;">
+        <h2><span class="ikona">👥</span>Členové guildy</h2>
+        <div id="seznam-clenu" class="nacitani">Načítám…</div>
+        <p class="poznamka">Roli změníte výběrem v řádku člena.
+        Odebrání člena: administrace Supabase → Authentication → Users → Delete user.</p>
+      </div>
+
     </div>
   </main>
 
-  <script src="js/config.js?v=10"></script>
+  <script src="js/config.js?v=12"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/klient.js?v=10"></script>
-  <script src="js/clenska-sekce.js?v=10"></script>
+  <script src="js/klient.js?v=12"></script>
+  <script src="js/clenska-sekce.js?v=12"></script>
 </body>
 </html>

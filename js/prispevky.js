@@ -93,14 +93,21 @@ function pripravFormular() {
 
 // ---------- Načtení a vykreslení příspěvků ----------
 
+// Kolik příspěvků se ukáže hned; tlačítko "načíst starší" postupně přidává.
+// Zobrazují se jen novější příspěvky, staré (a jejich obrázky) se nestahují,
+// dokud si o ně člen sám neřekne. Šetří to přenos dat ze Supabase.
+const DAVKA_PRISPEVKU = 15;
+let zobrazenoPrispevku = DAVKA_PRISPEVKU;
+
 async function nactiPrispevky() {
   const prvek = document.getElementById("seznam-prispevku");
 
+  // O jeden navíc, abychom poznali, jestli existují ještě starší příspěvky
   const { data, error } = await sb
     .from("prispevky")
     .select("id, autor, nadpis, text, obrazek, vytvoreno, upraveno, reakce(clen_id, emoji)")
     .order("vytvoreno", { ascending: false })
-    .limit(50);
+    .limit(zobrazenoPrispevku + 1);
 
   prvek.classList.remove("nacitani");
 
@@ -114,23 +121,18 @@ async function nactiPrispevky() {
     return;
   }
 
-  // Obrázky jsou v soukromém úložišti, vyžádáme si k nim dočasné
-  // podepsané adresy (platí hodinu, pak si je web vyžádá znovu)
+  const jsouStarsi = data.length > zobrazenoPrispevku;
+  const prispevkyKZobrazeni = data.slice(0, zobrazenoPrispevku);
+
+  // Obrázky jsou v soukromém úložišti, adresy bereme z paměti (viz klient.js),
+  // takže se stejný obrázek nestahuje při každém načtení znovu.
   obrazkyPodleId = {};
-  const cesty = data.filter((p) => p.obrazek).map((p) => p.obrazek);
-  const adresyObrazku = {};
-  if (cesty.length > 0) {
-    const { data: podepsane } = await sb.storage.from(ULOZISTE).createSignedUrls(cesty, 3600);
-    if (podepsane) {
-      for (const zaznam of podepsane) {
-        if (!zaznam.error) adresyObrazku[zaznam.path] = zaznam.signedUrl;
-      }
-    }
-  }
+  const cesty = prispevkyKZobrazeni.filter((p) => p.obrazek).map((p) => p.obrazek);
+  const adresyObrazku = await ziskejPodepsaneAdresy(ULOZISTE, cesty);
 
   reakcePodleId = {};
-  nactenePrispevky = data;
-  prvek.innerHTML = data.map((prispevek) => {
+  nactenePrispevky = prispevkyKZobrazeni;
+  prvek.innerHTML = prispevkyKZobrazeni.map((prispevek) => {
     const profil = profily[prispevek.autor];
     const jeMuj = prispevek.autor === mojeId;
     const smiSmazat = jeMuj || jeVedeni(mujProfil);
@@ -153,7 +155,17 @@ async function nactiPrispevky() {
           <img class="prispevek-obrazek" src="${adresa}" alt="Obrázek k příspěvku" loading="lazy"></a>` : ""}
         ${reakceHtml(prispevek)}
       </article>`;
-  }).join("");
+  }).join("")
+  + (jsouStarsi
+      ? `<button class="tlacitko tlacitko-obrys" onclick="nactiStarsiPrispevky()"
+           style="display:block; margin:8px auto 0;">Načíst starší příspěvky</button>`
+      : "");
+}
+
+// Přidá další dávku příspěvků k zobrazení
+function nactiStarsiPrispevky() {
+  zobrazenoPrispevku += DAVKA_PRISPEVKU;
+  nactiPrispevky();
 }
 
 // ---------- Úprava vlastního příspěvku ----------

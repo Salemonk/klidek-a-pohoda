@@ -65,8 +65,15 @@ pokud má návštěvník v localStorage uložený přihlašovací token
 - `formatujDatum`, `formatujCasChatu` české formátování dat.
 - `pripravEmojiVyber(tlacitkoId, panelId, poleId)` panel smajlíků,
   vkládá na pozici kurzoru. Nabídka je v konstantě `ZAKLADNI_EMOJI`.
+- `ziskejPodepsaneAdresy(bucket, cesty)` vrátí `{cesta: adresa}` pro soubory
+  v privátním bucketu. **Úspora přenosu:** podepsané adresy (platné 1 h)
+  se ukládají do localStorage (`kap-pamet-adres`, prefix kvůli sdílenému
+  původu na github.io) a dokud platí, reusují se stejné adresy → prohlížeč
+  servíruje obrázek z vlastní cache místo stažení ze Supabase. Prošlé
+  záznamy se čistí při každém čtení. `zapomenAdresu(bucket, cesta)` invaliduje
+  jeden záznam (volá se po přepsání souboru na stejné cestě, tj. výměně avatara).
 - `nactiAdresyAvataru(profily)` a `avatarHtml(profil, adresa)` avatary
-  (podepsané adresy z privátního bucketu, fallback kolečko s písmenem).
+  (staví na `ziskejPodepsaneAdresy`, fallback kolečko s písmenem).
 - `zmensiObrazek(soubor, max)` a `pripravAvatar(soubor, hrana)` zmenšení
   obrázků v prohlížeči přes canvas do JPG (kvalita 0.85) před nahráním.
 
@@ -92,9 +99,15 @@ Zabezpečení (RLS):
   s veřejným klíčem) se nedostane k ničemu.
 - Role a práva: `clen` (základ), `vedeni` (navíc: zakládání a úprava akcí,
   mazání cizích zpráv/příspěvků/obrázků, správa pozvánek), `admin`
-  (navíc: úprava stavu guildy). SECURITY DEFINER funkce `je_admin()`
-  a `je_vedeni()` (admin se počítá jako vedení) používají policies;
-  na webu tomu odpovídá `jeVedeni(profil)` v klient.js.
+  (navíc: úprava stavu guildy, panel Členové guildy). SECURITY DEFINER
+  funkce `je_admin()` a `je_vedeni()` (admin se počítá jako vedení)
+  používají policies; na webu tomu odpovídá `jeVedeni(profil)` v klient.js.
+- Správa členů (skript `prehled-clenu.sql`): RPC `seznam_clenu()` vrací
+  adminovi členy včetně e-mailu a posledního přihlášení (čte auth.users
+  přes SECURITY DEFINER, neadminovi vrací prázdno), RPC
+  `nastav_roli(clen_id, nova_role)` mění roli (jen admin, ne sám sobě).
+  Roli NELZE měnit přímým UPDATE z webu (column grant kryje jen
+  prezdivka + avatar), právě proto existuje funkce.
 - Autor může upravovat vlastní příspěvek; akce upravuje jen vedení.
   Sloupec `upraveno` (timestamptz) u `prispevky` a `akce` nastavuje
   klient při každé úpravě, v UI se zobrazuje jako „upraveno“.
@@ -138,8 +151,15 @@ se mohou rozbít nekompatibilitou skriptů. HTML samotné se neverzuje.
 ## Známé vlastnosti a omezení
 
 - Bezplatný tarif Supabase: projekt se po 7 dnech bez požadavku uspí
-  (probuzení v administraci nebo prvním pomalejším požadavkem).
-- Chat načítá posledních 100 zpráv, nástěnka 50 příspěvků, bez stránkování.
+  (probuzení v administraci nebo prvním pomalejším požadavkem). Reálné
+  úzké hrdlo pro guildu není úložiště (1 GB), ale měsíční přenos (5 GB) —
+  proto paměť adres obrázků a stránkování nástěnky výše. Odhad: malá
+  guilda (desítky členů, stovky obrázků) se k limitu nepřiblíží.
+- Chat načítá posledních 100 zpráv. Nástěnka načítá po dávkách
+  `DAVKA_PRISPEVKU` (15) s tlačítkem „Načíst starší příspěvky“ — staré
+  příspěvky ani jejich obrázky se nestahují, dokud si o ně člen neřekne
+  (úspora přenosu). `nactiPrispevky()` vždy vykresluje `zobrazenoPrispevku`
+  posledních příspěvků; edit/reakce zachovají aktuální počet.
 - Mazání zpráv/příspěvků jiných klientů se projeví u chatu realtime,
   u nástěnky až po obnovení.
 - `supabase-js` se načítá jako `@2` (poslední v2). Kdyby CDN verze něco

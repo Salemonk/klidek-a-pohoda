@@ -124,24 +124,92 @@ function pripravEmojiVyber(tlacitkoId, panelId, poleId) {
   });
 }
 
+// ---------- Paměť adres obrázků (úspora přenosu) ----------
+//
+// Obrázky v úložišti nejsou veřejné, sahá se na ně přes dočasné
+// "podepsané adresy" platné 1 hodinu. Kdybychom je generovali při každém
+// načtení znovu, měla by každá adresa jiný podpis a prohlížeč by obrázek
+// pokaždé stáhl znovu. Proto si adresy pamatujeme (v úložišti prohlížeče):
+// dokud platí, použije se stejná adresa a prohlížeč obrázek vezme ze své
+// vlastní paměti, aniž by ho stahoval ze Supabase. To výrazně šetří přenos.
+
+const PAMET_ADRES_KLIC = "kap-pamet-adres"; // prefix "kap" kvůli sdílenému původu na github.io
+const PAMET_REZERVA_MS = 10 * 60 * 1000;    // adresu obnovíme 10 min před vypršením
+
+function nactiPametAdres() {
+  try {
+    return JSON.parse(localStorage.getItem(PAMET_ADRES_KLIC)) || {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function ulozPametAdres(pamet) {
+  try {
+    localStorage.setItem(PAMET_ADRES_KLIC, JSON.stringify(pamet));
+  } catch (e) { /* plné/zakázané úložiště nevadí, jen se nezrychlí */ }
+}
+
+// Vrátí mapu { cesta: adresa } pro dané cesty v úložišti.
+// Z paměti vezme, co ještě platí; zbytek si vyžádá od Supabase a zapamatuje.
+async function ziskejPodepsaneAdresy(bucket, cesty) {
+  if (!cesty || cesty.length === 0) return {};
+
+  const pamet = nactiPametAdres();
+  const ted = Date.now();
+  const vysledek = {};
+  const chybejici = [];
+
+  for (const cesta of cesty) {
+    const zaznam = pamet[bucket + "::" + cesta];
+    if (zaznam && zaznam.plati > ted) {
+      vysledek[cesta] = zaznam.adresa;
+    } else {
+      chybejici.push(cesta);
+    }
+  }
+
+  if (chybejici.length > 0) {
+    const { data } = await sb.storage.from(bucket).createSignedUrls(chybejici, 3600);
+    if (data) {
+      for (const zaznam of data) {
+        if (!zaznam.error) {
+          vysledek[zaznam.path] = zaznam.signedUrl;
+          pamet[bucket + "::" + zaznam.path] = {
+            adresa: zaznam.signedUrl,
+            plati: ted + 3600 * 1000 - PAMET_REZERVA_MS,
+          };
+        }
+      }
+    }
+  }
+
+  // Úklid prošlých záznamů, ať paměť neroste donekonečna
+  for (const klic of Object.keys(pamet)) {
+    if (pamet[klic].plati <= ted) delete pamet[klic];
+  }
+  ulozPametAdres(pamet);
+
+  return vysledek;
+}
+
+// Zapomene uloženou adresu (voláme po výměně souboru na stejné cestě,
+// např. při nahrání nového avatara, ať se hned ukáže ten nový)
+function zapomenAdresu(bucket, cesta) {
+  const pamet = nactiPametAdres();
+  delete pamet[bucket + "::" + cesta];
+  ulozPametAdres(pamet);
+}
+
 // ---------- Avatary ----------
 
-// Avatary jsou v soukromém úložišti, vyžádá k nim dočasné podepsané
-// adresy a vrátí mapu { idClena: adresa }
+// Avatary jsou v soukromém úložišti, vrátí mapu { idClena: adresa }
 async function nactiAdresyAvataru(profilyMapa) {
   const sAvatarem = Object.values(profilyMapa).filter((p) => p.avatar);
   if (sAvatarem.length === 0) return {};
 
-  const { data } = await sb.storage
-    .from("avatary")
-    .createSignedUrls(sAvatarem.map((p) => p.avatar), 3600);
+  const podleCesty = await ziskejPodepsaneAdresy("avatary", sAvatarem.map((p) => p.avatar));
 
-  const podleCesty = {};
-  if (data) {
-    for (const zaznam of data) {
-      if (!zaznam.error) podleCesty[zaznam.path] = zaznam.signedUrl;
-    }
-  }
   const vysledek = {};
   for (const profil of sAvatarem) {
     if (podleCesty[profil.avatar]) vysledek[profil.id] = podleCesty[profil.avatar];
