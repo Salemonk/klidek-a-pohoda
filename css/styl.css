@@ -116,6 +116,7 @@ p + p { margin-top: 0.75rem; }
   color: var(--text-tlumeny);
   text-decoration: none;
   font-weight: 500;
+  transition: color 0.15s;
 }
 .menu a:hover { color: var(--text); }
 .menu a.aktivni { color: var(--akcent); }
@@ -135,9 +136,28 @@ p + p { margin-top: 0.75rem; }
   border: none;
   font-size: 1rem;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
 }
 .tlacitko:hover { background: var(--akcent-tmavy); color: var(--text-na-akcentu); }
+
+/* Jemný zvedací efekt na všech tlačítkách webu (kromě odkazů v menu) */
+button:not(.zprava-smazat):not(.reakce-chip):not(.emoji-volba):not(.ucast-tlacitko),
+.tlacitko, .tlacitko-obrys, .tlacitko-discord, .tlacitko-male {
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+button:not(:disabled):not(.zprava-smazat):not(.reakce-chip):not(.emoji-volba):not(.ucast-tlacitko):hover,
+.tlacitko:hover, .tlacitko-obrys:hover, .tlacitko-discord:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+button:not(:disabled):active, .tlacitko:active, .tlacitko-obrys:active, .tlacitko-discord:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
 
 .tlacitko-male { padding: 6px 14px; font-size: 0.9rem; }
 
@@ -198,6 +218,12 @@ p + p { margin-top: 0.75rem; }
   border-radius: 12px;
   padding: 20px;
   text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.karta:hover {
+  transform: translateY(-4px);
+  border-color: var(--akcent);
+  box-shadow: 0 10px 24px rgba(85, 183, 232, 0.15);
 }
 .karta p { color: var(--text-tlumeny); font-size: 0.95rem; }
 .karta-ikona {
@@ -356,6 +382,39 @@ textarea { resize: vertical; min-height: 100px; }
 
 .nacitani { color: var(--text-tlumeny); font-style: italic; }
 
+/* ---------- Skeleton loadery (šedé placeholdery místo "Načítám…") ---------- */
+
+@keyframes skeleton-tep {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.skeleton-radek, .skeleton-kruh {
+  background: var(--panel-svetly);
+  border-radius: 6px;
+  animation: skeleton-tep 1.4s ease-in-out infinite;
+}
+.skeleton-radek { height: 14px; margin-bottom: 8px; }
+.skeleton-radek:last-child { margin-bottom: 0; }
+.skeleton-radek.kratky { width: 35%; }
+.skeleton-radek.stredni { width: 60%; }
+.skeleton-radek.dlouhy { width: 88%; }
+.skeleton-kruh { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; }
+
+.skeleton-karta {
+  border: 1px solid var(--ohraniceni);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 14px;
+  background: var(--panel);
+}
+.skeleton-radek-obal { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.skeleton-radek-obal .skeleton-radek { margin-bottom: 0; flex: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-radek, .skeleton-kruh { animation: none; opacity: 0.7; }
+}
+
 /* ---------- Akce ---------- */
 
 .akce-polozka {
@@ -364,7 +423,9 @@ textarea { resize: vertical; min-height: 100px; }
   padding: 16px;
   margin-bottom: 14px;
   background: var(--panel-svetly);
+  transition: border-color 0.2s;
 }
+.akce-polozka:hover { border-color: var(--akcent); }
 .akce-polozka h3 { color: var(--akcent); }
 .akce-datum { color: var(--akcent-2); font-weight: 600; font-size: 0.95rem; }
 .akce-popis { margin: 8px 0; color: var(--text); }
@@ -462,7 +523,9 @@ textarea { resize: vertical; min-height: 100px; }
   padding: 18px;
   margin-bottom: 16px;
   background: var(--panel-svetly);
+  transition: border-color 0.2s;
 }
+.prispevek:hover { border-color: var(--akcent); }
 .prispevek h3 { color: var(--akcent); margin-bottom: 4px; }
 .prispevek-meta { color: var(--text-tlumeny); font-size: 0.85rem; margin-bottom: 10px; }
 .prispevek-text ul { margin: 6px 0 6px 22px; }

@@ -27,6 +27,9 @@ Frontend s ní komunikuje knihovnou `supabase-js` v2 načítanou z CDN jsdelivr.
 index.html            veřejná stránka (jediná pro nepřihlášené + ochrana-udaju)
 ochrana-udaju.html    zásady ochrany osobních údajů (GDPR), veřejná
 404.html              chybová stránka (GitHub Pages ji servíruje automaticky)
+manifest.json          PWA manifest (ikona na ploše mobilu, název, barvy)
+sw.js                  service worker (cache statických souborů, offline)
+js/pwa.js              registrace service workeru (načteno na všech stránkách)
 prihlaseni.html       přihlašovací formulář
 registrace.html       registrace nového člena (jen s pozvánkovým kódem)
 clenska-sekce.html    přehled: stav guildy, nejbližší akce, profil, změna hesla
@@ -84,6 +87,10 @@ pokud má návštěvník v localStorage uložený přihlašovací token
   (staví na `ziskejPodepsaneAdresy`, fallback kolečko s písmenem).
 - `zmensiObrazek(soubor, max)` a `pripravAvatar(soubor, hrana)` zmenšení
   obrázků v prohlížeči přes canvas do JPG (kvalita 0.85) před nahráním.
+- `pridejDoKalendare(nazev, popis, datumIso, delkaHodin=2)` vygeneruje
+  a stáhne `.ics` soubor (formát iCalendar), čistě klientsky, žádný server.
+  Použito na akce.html (tlačítko „📅 do kalendáře“ u každé akce). Délka akce
+  na webu se nikde nezadává, odhaduje se 2 h; člen si ji v kalendáři upraví.
 
 ## Datový model (Supabase / PostgreSQL)
 
@@ -140,6 +147,42 @@ webhook „akce“ připomínku den (3–24 h) a hodinu (do 60 min) před akcí.
 Sloupce `akce.pripomenuto_den` a `akce.pripomenuto_hodina` brání dvojímu
 odeslání; editace akce s novým datem je v akce.js vynuluje (re-remind).
 Časy v Discordu jsou `<t:epoch:R/F>` (relativní/plný, lokalizované u každého).
+
+## Animace a skeleton loadery
+
+Jemné hover efekty (transition 0.15–0.2s): karty na indexu se zvednou
+(`translateY`) a zesvětlí rámeček, tlačítka se lehce nadzvednou se stínem,
+karty akcí/příspěvků zvýrazní rámeček. Vše respektuje
+`prefers-reduced-motion` (animace se vypnou pro uživatele, kteří si to
+nastavili v systému) — pravidlo je globální v `styl.css`.
+
+Skeleton loadery (`.skeleton-radek`, `.skeleton-kruh`, `.skeleton-karta`,
+`.skeleton-radek-obal`) nahradily text „Načítám…“ na všech 9 místech webu,
+kde se čeká na data ze Supabase (akce, ankety, chat, příspěvky, přehled).
+Je to čistě HTML/CSS — každá `render*()` funkce v JS už předtím dělala
+`prvek.innerHTML = …`, takže skeleton stačilo vložit do počátečního HTML
+a JS ho samo přepíše, jakmile data dorazí. Jemná pulzující animace
+(`skeleton-tep`), respektuje `prefers-reduced-motion`.
+
+## PWA (instalace na plochu mobilu)
+
+`manifest.json` + `sw.js` + `js/pwa.js`. Ikony v `assets/icon-*.png`
+(192/512, „any" i „maskable" — maskable má lenochoda zmenšeného na 72 %
+uprostřed tmavého pozadí, ať přežije oříznutí do kruhu na Androidu) a
+`assets/apple-touch-icon.png` (180×180, pro iOS).
+
+Service worker (`sw.js`) cachuje jen **stejnou doménu** (CSS, JS, obrázky).
+Cizí domény (Supabase, jsdelivr CDN) necachuje vůbec — `fetch` handler je
+při jiném originu ihned opouští (`return` bez `respondWith`), takže chat,
+akce a příspěvky jsou vždy čerstvé, nikdy ne z cache. Stránky (HTML) jedou
+network-first (offline fallback z cache), statické soubory cache-first.
+Cache se jmenuje `kap-cache-v1` — při větší změně logiky SW zvyšte číslo,
+staré cache se smažou samy v `activate`.
+
+**POZOR:** Service worker funguje jen na **HTTPS** (nebo `localhost`).
+Na `file://` nebo prostém HTTP se registrace tiše nezdaří (pwa.js to
+odchytává), web ale funguje normálně dál, jen bez PWA vychytávek.
+GitHub Pages běží na HTTPS, takže tam funguje bez problémů.
 
 ## Klíče a tajemství
 

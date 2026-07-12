@@ -85,6 +85,54 @@ function jeVedeni(profil) {
   return !!profil && (profil.role === "vedeni" || profil.role === "admin");
 }
 
+// ---------- Přidání do kalendáře (.ics) ----------
+
+// Formát data pro .ics: 20260718T190000Z (UTC, bez pomlček a dvojteček)
+function proIcsDatum(iso) {
+  return new Date(iso).toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+}
+
+// Escapování textu podle pravidel formátu .ics (čárky, středníky, nové řádky)
+function escIcs(text) {
+  return String(text)
+    .replace(/\\/g, "\\\\")
+    .replace(/;/g, "\\;")
+    .replace(/,/g, "\\,")
+    .replace(/\n/g, "\\n");
+}
+
+// Vytvoří a stáhne .ics soubor pro danou akci; hodinová délka je odhad
+// (na webu nezadáváme konec akce), člen si ji v kalendáři může upravit.
+function pridejDoKalendare(nazev, popis, datumIso, delkaHodin = 2) {
+  const zacatek = new Date(datumIso);
+  const konec = new Date(zacatek.getTime() + delkaHodin * 60 * 60 * 1000);
+  const nyni = proIcsDatum(new Date().toISOString());
+
+  const radky = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Klidek a pohoda gaming//web//CS",
+    "BEGIN:VEVENT",
+    "UID:" + nyni + "-" + Math.random().toString(36).slice(2) + "@klidek-a-pohoda",
+    "DTSTAMP:" + nyni,
+    "DTSTART:" + proIcsDatum(zacatek.toISOString()),
+    "DTEND:" + proIcsDatum(konec.toISOString()),
+    "SUMMARY:" + escIcs(nazev),
+    popis ? "DESCRIPTION:" + escIcs(popis) : null,
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].filter(Boolean).join("\r\n");
+
+  const soubor = new Blob([radky], { type: "text/calendar;charset=utf-8" });
+  const odkaz = document.createElement("a");
+  odkaz.href = URL.createObjectURL(soubor);
+  odkaz.download = "akce.ics";
+  document.body.appendChild(odkaz);
+  odkaz.click();
+  odkaz.remove();
+  URL.revokeObjectURL(odkaz.href);
+}
+
 // ---------- Smajlíky ----------
 
 const ZAKLADNI_EMOJI = [

@@ -133,6 +133,7 @@ function vykresliBudouci(akceSeznam, chyba) {
         <div class="akce-datum">📅 ${formatujDatum(akce.datum)}</div>
         ${akce.popis ? `<div class="akce-popis">${formatujText(akce.popis)}</div>` : ""}
         <div class="akce-meta">Naplánoval(a): ${autor ? esc(autor.prezdivka) : "?"}
+          · <button class="zprava-smazat" onclick="pridejAkciDoKalendare(${akce.id})">📅 do kalendáře</button>
           ${akce.upraveno ? " · upraveno" : ""}
           ${jeVedeni(mujProfil) ? `· <button class="zprava-smazat" onclick="zacniUpravuAkce(${akce.id})">upravit</button>` : ""}
           ${smiSpravovat ? `· <button class="zprava-smazat" onclick="smazAkci(${akce.id})">smazat akci</button>` : ""}
@@ -163,6 +164,14 @@ function vykresliMinule(akceSeznam, chyba) {
     <div class="akce-meta" style="margin-bottom:6px;">
       ${esc(akce.nazev)} (${formatujDatum(akce.datum)})
     </div>`).join("");
+}
+
+// ---------- Přidání do kalendáře ----------
+
+function pridejAkciDoKalendare(akceId) {
+  const akce = nacteneAkce.find((a) => a.id === akceId);
+  if (!akce) return;
+  pridejDoKalendare(akce.nazev, akce.popis, akce.datum);
 }
 
 // ---------- Úprava akce (jen vedení a admin) ----------

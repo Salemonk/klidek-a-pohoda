@@ -5,8 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Členská sekce | Klídek a pohoda gaming</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#12141c">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="stylesheet" href="css/styl.css?v=18">
+  <link rel="stylesheet" href="css/styl.css?v=19">
 </head>
 <body>
 
@@ -32,7 +35,7 @@
         <h2><span class="ikona">📢</span>Stav guildy
           <button id="tlacitko-upravit-stav" class="tlacitko-nenapadne" style="display:none; float:right;">Upravit</button>
         </h2>
-        <div id="stav-guildy" class="nacitani">Načítám…</div>
+        <div id="stav-guildy"><div class="skeleton-radek dlouhy"></div><div class="skeleton-radek stredni"></div></div>
         <form id="formular-stav" style="display:none; margin-top:10px;">
           <textarea id="stav-text" rows="3"></textarea>
           <button type="submit" class="tlacitko tlacitko-male">Uložit</button>
@@ -42,7 +45,7 @@
 
       <div class="panel-blok">
         <h2><span class="ikona">📅</span>Nejbližší akce</h2>
-        <div id="nejblizsi-akce" class="nacitani">Načítám…</div>
+        <div id="nejblizsi-akce"><div class="skeleton-radek stredni"></div></div>
         <p style="margin-top:12px;"><a href="akce.html">Všechny akce a hlasování o účasti →</a></p>
       </div>
 
@@ -89,12 +92,15 @@
         <button id="tlacitko-nova-pozvanka" class="tlacitko tlacitko-male">Vytvořit pozvánku</button>
         <div id="nova-pozvanka" style="display:none;"></div>
         <h3 style="margin-top:16px;">Přehled pozvánek</h3>
-        <div id="seznam-pozvanek" class="nacitani">Načítám…</div>
+        <div id="seznam-pozvanek"><div class="skeleton-radek stredni"></div></div>
       </div>
 
       <div class="panel-blok" id="panel-clenove" style="display:none;">
         <h2><span class="ikona">👥</span>Členové guildy</h2>
-        <div id="seznam-clenu" class="nacitani">Načítám…</div>
+        <div id="seznam-clenu">
+          <div class="skeleton-radek-obal"><div class="skeleton-kruh"></div><div class="skeleton-radek kratky"></div></div>
+          <div class="skeleton-radek-obal"><div class="skeleton-kruh"></div><div class="skeleton-radek kratky"></div></div>
+        </div>
         <p class="poznamka">Roli změníte výběrem v řádku člena.
         Odebrání člena: administrace Supabase → Authentication → Users → Delete user.</p>
       </div>
@@ -102,9 +108,10 @@
     </div>
   </main>
 
-  <script src="js/config.js?v=14"></script>
+  <script src="js/config.js?v=15"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/klient.js?v=14"></script>
-  <script src="js/clenska-sekce.js?v=14"></script>
+  <script src="js/klient.js?v=15"></script>
+  <script src="js/clenska-sekce.js?v=15"></script>
+  <script src="js/pwa.js?v=1"></script>
 </body>
 </html>

@@ -5,8 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat | Klídek a pohoda gaming</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#12141c">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="stylesheet" href="css/styl.css?v=18">
+  <link rel="stylesheet" href="css/styl.css?v=19">
 </head>
 <body>
 
@@ -33,7 +36,9 @@
       </div>
 
       <div id="chat-okno" class="chat-okno">
-        <p class="nacitani">Načítám zprávy…</p>
+        <div class="skeleton-radek-obal"><div class="skeleton-kruh"></div><div class="skeleton-radek kratky"></div></div>
+        <div class="skeleton-radek-obal"><div class="skeleton-kruh"></div><div class="skeleton-radek stredni"></div></div>
+        <div class="skeleton-radek-obal"><div class="skeleton-kruh"></div><div class="skeleton-radek kratky"></div></div>
       </div>
 
       <div id="emoji-panel-chat" class="emoji-panel" hidden></div>
@@ -47,9 +52,10 @@
     </div>
   </main>
 
-  <script src="js/config.js?v=14"></script>
+  <script src="js/config.js?v=15"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/klient.js?v=14"></script>
-  <script src="js/chat.js?v=14"></script>
+  <script src="js/klient.js?v=15"></script>
+  <script src="js/chat.js?v=15"></script>
+  <script src="js/pwa.js?v=1"></script>
 </body>
 </html>

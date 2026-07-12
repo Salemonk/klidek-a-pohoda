@@ -5,8 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Akce | Klídek a pohoda gaming</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#12141c">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="stylesheet" href="css/styl.css?v=18">
+  <link rel="stylesheet" href="css/styl.css?v=19">
 </head>
 <body>
 
@@ -56,20 +59,27 @@
 
       <div class="panel-blok">
         <h2>Nadcházející akce</h2>
-        <div id="seznam-akci" class="nacitani">Načítám…</div>
+        <div id="seznam-akci">
+          <div class="skeleton-karta"><div class="skeleton-radek stredni"></div><div class="skeleton-radek kratky"></div><div class="skeleton-radek dlouhy"></div></div>
+          <div class="skeleton-karta"><div class="skeleton-radek stredni"></div><div class="skeleton-radek kratky"></div></div>
+        </div>
       </div>
 
       <div class="panel-blok">
         <h2>Proběhlé akce</h2>
-        <div id="seznam-minulych" class="nacitani">Načítám…</div>
+        <div id="seznam-minulych">
+          <div class="skeleton-radek stredni"></div>
+          <div class="skeleton-radek kratky"></div>
+        </div>
       </div>
 
     </div>
   </main>
 
-  <script src="js/config.js?v=14"></script>
+  <script src="js/config.js?v=15"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/klient.js?v=14"></script>
-  <script src="js/akce.js?v=14"></script>
+  <script src="js/klient.js?v=15"></script>
+  <script src="js/akce.js?v=15"></script>
+  <script src="js/pwa.js?v=1"></script>
 </body>
 </html>
