@@ -83,17 +83,36 @@ přes kterou zaregistroval. Nevyužitou pozvánku můžete kdykoli zrušit.
 > v administraci (každá registrace vyžaduje platný kód). Když budete chtít
 > účet založit „ručně“, prostě si vytvořte pozvánku.
 
-## Krok 5: Nastavení sebe jako admina
+## Krok 5: Nastavení rolí (admin a vedení)
 
-Admin může navíc: upravovat „Stav guildy“ a mazat cizí zprávy, příspěvky a akce.
+Web má tři role s různými právy:
 
-1. Nejdřív si založte účet sám sobě (krok 4).
-2. V **SQL Editoru** spusťte tento příkaz (doplňte svůj e-mail):
+| Právo | člen | vedení | admin |
+|---|---|---|---|
+| chat, příspěvky, hlasování o účasti | ✔ | ✔ | ✔ |
+| úprava vlastního příspěvku a profilu | ✔ | ✔ | ✔ |
+| zakládání a úprava akcí | ✖ | ✔ | ✔ |
+| mazání cizích zpráv a příspěvků | ✖ | ✔ | ✔ |
+| pozvánky pro nové členy | ✖ | ✔ | ✔ |
+| úprava „Stavu guildy“ | ✖ | ✖ | ✔ |
+
+Role se přidělují v **SQL Editoru** (doplňte e-mail dotyčného):
 
 ```sql
+-- povýšení na admina (typicky jen vy)
 update public.profily
 set role = 'admin'
-where id = (select id from auth.users where email = 'vas@email.cz');
+where id = (select id from auth.users where lower(email) = 'vas@email.cz');
+
+-- povýšení na vedení
+update public.profily
+set role = 'vedeni'
+where id = (select id from auth.users where lower(email) = 'clen@email.cz');
+
+-- návrat na běžného člena
+update public.profily
+set role = 'clen'
+where id = (select id from auth.users where lower(email) = 'clen@email.cz');
 ```
 
 ## Krok 6: Vyzkoušení
@@ -155,3 +174,5 @@ Supabase (**Database → Backups**; na bezplatném tarifu denní záloha).
 - `supabase/reakce.sql`: reakce smajlíkem na příspěvky.
 - `supabase/pozvanky.sql`: registrace nových členů pozvánkovými kódy
   (viz krok 4; vyžaduje i nastavení v Authentication).
+- `supabase/role-vedeni-a-upravy.sql`: role „vedení“, úpravy příspěvků
+  a akcí, práva podle tabulky v kroku 5.

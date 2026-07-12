@@ -8,6 +8,7 @@ let profily = {};
 let obrazkyPodleId = {}; // id příspěvku → cesta k obrázku v úložišti
 let avatary = {};        // id člena → adresa avataru
 let reakcePodleId = {};  // id příspěvku → pole reakcí {clen_id, emoji}
+let nactenePrispevky = []; // naposledy načtené příspěvky (pro úpravy)
 
 const ULOZISTE = "prispevky-obrazky";
 
@@ -97,7 +98,7 @@ async function nactiPrispevky() {
 
   const { data, error } = await sb
     .from("prispevky")
-    .select("id, autor, nadpis, text, obrazek, vytvoreno, reakce(clen_id, emoji)")
+    .select("id, autor, nadpis, text, obrazek, vytvoreno, upraveno, reakce(clen_id, emoji)")
     .order("vytvoreno", { ascending: false })
     .limit(50);
 
@@ -128,19 +129,23 @@ async function nactiPrispevky() {
   }
 
   reakcePodleId = {};
+  nactenePrispevky = data;
   prvek.innerHTML = data.map((prispevek) => {
     const profil = profily[prispevek.autor];
-    const smiSmazat = prispevek.autor === mojeId || (mujProfil && mujProfil.role === "admin");
+    const jeMuj = prispevek.autor === mojeId;
+    const smiSmazat = jeMuj || jeVedeni(mujProfil);
     if (prispevek.obrazek) obrazkyPodleId[prispevek.id] = prispevek.obrazek;
     const adresa = prispevek.obrazek ? adresyObrazku[prispevek.obrazek] : null;
     reakcePodleId[prispevek.id] = prispevek.reakce || [];
 
     return `
-      <article class="prispevek">
+      <article class="prispevek" id="prispevek-${prispevek.id}">
         <h3>${esc(prispevek.nadpis)}</h3>
         <div class="prispevek-meta">
           ${avatarHtml(profil, avatary[prispevek.autor])}
           ${profil ? esc(profil.prezdivka) : "?"} · ${formatujDatum(prispevek.vytvoreno)}
+          ${prispevek.upraveno ? " · upraveno" : ""}
+          ${jeMuj ? `· <button class="zprava-smazat" onclick="zacniUpravuPrispevku(${prispevek.id})">upravit</button>` : ""}
           ${smiSmazat ? `· <button class="zprava-smazat" onclick="smazPrispevek(${prispevek.id})">smazat</button>` : ""}
         </div>
         <div class="prispevek-text">${formatujText(prispevek.text)}</div>
@@ -149,6 +154,44 @@ async function nactiPrispevky() {
         ${reakceHtml(prispevek)}
       </article>`;
   }).join("");
+}
+
+// ---------- Úprava vlastního příspěvku ----------
+
+function zacniUpravuPrispevku(prispevekId) {
+  const prispevek = nactenePrispevky.find((p) => p.id === prispevekId);
+  if (!prispevek) return;
+
+  const clanek = document.getElementById("prispevek-" + prispevekId);
+  clanek.innerHTML = `
+    <form onsubmit="ulozUpravuPrispevku(event, ${prispevekId})">
+      <label for="uprava-nadpis">Nadpis</label>
+      <input type="text" id="uprava-nadpis" maxlength="120" required value="${esc(prispevek.nadpis)}">
+
+      <label for="uprava-text">Text</label>
+      <textarea id="uprava-text" rows="6" required>${esc(prispevek.text)}</textarea>
+
+      <button type="submit" class="tlacitko tlacitko-male">Uložit změny</button>
+      <button type="button" class="tlacitko-nenapadne" onclick="nactiPrispevky()">Zrušit</button>
+    </form>`;
+}
+
+async function ulozUpravuPrispevku(udalost, prispevekId) {
+  udalost.preventDefault();
+
+  const nadpis = document.getElementById("uprava-nadpis").value.trim();
+  const text = document.getElementById("uprava-text").value.trim();
+  if (!nadpis || !text) return;
+
+  const { error } = await sb.from("prispevky")
+    .update({ nadpis: nadpis, text: text, upraveno: new Date().toISOString() })
+    .eq("id", prispevekId);
+
+  if (error) {
+    alert("Úpravu se nepodařilo uložit: " + error.message);
+    return;
+  }
+  await nactiPrispevky();
 }
 
 // ---------- Reakce smajlíkem ----------

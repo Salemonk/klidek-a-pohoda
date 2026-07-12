@@ -97,8 +97,9 @@ async function nactiNejblizsiAkce() {
   prvek.classList.remove("nacitani");
 
   if (data.length === 0) {
-    prvek.innerHTML = `<p>Zatím není naplánovaná žádná akce.
-      <a href="akce.html">Vytvoř první! →</a></p>`;
+    prvek.innerHTML = jeVedeni(mujProfil)
+      ? `<p>Zatím není naplánovaná žádná akce. <a href="akce.html">Vytvoř první! →</a></p>`
+      : `<p>Zatím není naplánovaná žádná akce.</p>`;
     return;
   }
 
@@ -207,7 +208,7 @@ function vygenerujKodPozvanky() {
 }
 
 async function pripravPozvanky() {
-  if (!mujProfil || mujProfil.role !== "admin") return;
+  if (!jeVedeni(mujProfil)) return;
 
   document.getElementById("panel-pozvanky").style.display = "block";
   document.getElementById("tlacitko-nova-pozvanka")

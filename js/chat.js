@@ -54,7 +54,7 @@ function pridejZpravuDoOkna(zprava) {
   const okno = document.getElementById("chat-okno");
   const profil = profily[zprava.autor];
   const jeMoje = zprava.autor === mojeId;
-  const smiSmazat = jeMoje || (mujProfil && mujProfil.role === "admin");
+  const smiSmazat = jeMoje || jeVedeni(mujProfil);
 
   const prvek = document.createElement("div");
   prvek.className = "zprava" + (jeMoje ? " zprava-moje" : "");

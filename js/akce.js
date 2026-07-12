@@ -5,6 +5,7 @@
 let mujProfil = null;
 let mojeId = null;
 let profily = {};
+let nacteneAkce = []; // naposledy načtené nadcházející akce (pro úpravy)
 
 const MOZNOSTI_UCASTI = [
   { hodnota: "jdu", popisek: "✔ Jdu" },
@@ -20,8 +21,21 @@ async function spustStranku() {
   mujProfil = await nactiMujProfil(mojeId);
   profily = await nactiVsechnyProfily();
 
+  // Akce zakládá jen vedení a admin, ostatním formulář neukazujeme
+  if (jeVedeni(mujProfil)) {
+    document.getElementById("panel-nova-akce").style.display = "block";
+  }
+
   pripravFormular();
   await nactiAkce();
+}
+
+// Převod data na hodnotu pro políčko typu datetime-local
+function proDatetimeLocal(iso) {
+  const datum = new Date(iso);
+  const dopln = (cislo) => String(cislo).padStart(2, "0");
+  return `${datum.getFullYear()}-${dopln(datum.getMonth() + 1)}-${dopln(datum.getDate())}`
+    + `T${dopln(datum.getHours())}:${dopln(datum.getMinutes())}`;
 }
 
 // ---------- Vytvoření akce ----------
@@ -64,7 +78,7 @@ async function nactiAkce() {
   // Nadcházející akce (včetně hlasů o účasti)
   const { data: budouci, error: chyba1 } = await sb
     .from("akce")
-    .select("id, nazev, popis, datum, autor, ucast(clen_id, stav)")
+    .select("id, nazev, popis, datum, autor, upraveno, ucast(clen_id, stav)")
     .gte("datum", ted)
     .order("datum", { ascending: true });
 
@@ -89,10 +103,13 @@ function vykresliBudouci(akceSeznam, chyba) {
     return;
   }
   if (!akceSeznam || akceSeznam.length === 0) {
-    prvek.innerHTML = "<p>Žádná akce není naplánovaná. Vytvoř první nahoře ve formuláři!</p>";
+    prvek.innerHTML = jeVedeni(mujProfil)
+      ? "<p>Žádná akce není naplánovaná. Vytvoř první nahoře ve formuláři!</p>"
+      : "<p>Žádná akce není naplánovaná. Vydrž, vedení už jistě něco chystá. 🙂</p>";
     return;
   }
 
+  nacteneAkce = akceSeznam;
   prvek.innerHTML = akceSeznam.map((akce) => {
     const autor = profily[akce.autor];
     const mujHlas = akce.ucast.find((u) => u.clen_id === mojeId);
@@ -108,15 +125,17 @@ function vykresliBudouci(akceSeznam, chyba) {
               onclick="hlasuj(${akce.id}, '${moznost.hodnota}')">${moznost.popisek}</button>
     `).join("");
 
-    const smiSmazat = akce.autor === mojeId || (mujProfil && mujProfil.role === "admin");
+    const smiSpravovat = jeVedeni(mujProfil) || akce.autor === mojeId;
 
     return `
-      <div class="akce-polozka">
+      <div class="akce-polozka" id="akce-${akce.id}">
         <h3>${esc(akce.nazev)}</h3>
         <div class="akce-datum">📅 ${formatujDatum(akce.datum)}</div>
         ${akce.popis ? `<div class="akce-popis">${formatujText(akce.popis)}</div>` : ""}
         <div class="akce-meta">Naplánoval(a): ${autor ? esc(autor.prezdivka) : "?"}
-          ${smiSmazat ? `· <button class="zprava-smazat" onclick="smazAkci(${akce.id})">smazat akci</button>` : ""}
+          ${akce.upraveno ? " · upraveno" : ""}
+          ${jeVedeni(mujProfil) ? `· <button class="zprava-smazat" onclick="zacniUpravuAkce(${akce.id})">upravit</button>` : ""}
+          ${smiSpravovat ? `· <button class="zprava-smazat" onclick="smazAkci(${akce.id})">smazat akci</button>` : ""}
         </div>
         <div class="ucast-tlacitka">${tlacitka}</div>
         <div class="ucast-prehled">
@@ -144,6 +163,53 @@ function vykresliMinule(akceSeznam, chyba) {
     <div class="akce-meta" style="margin-bottom:6px;">
       ${esc(akce.nazev)} (${formatujDatum(akce.datum)})
     </div>`).join("");
+}
+
+// ---------- Úprava akce (jen vedení a admin) ----------
+
+function zacniUpravuAkce(akceId) {
+  const akce = nacteneAkce.find((a) => a.id === akceId);
+  if (!akce) return;
+
+  const polozka = document.getElementById("akce-" + akceId);
+  polozka.innerHTML = `
+    <form onsubmit="ulozUpravuAkce(event, ${akceId})">
+      <label for="uprava-nazev">Název akce</label>
+      <input type="text" id="uprava-nazev" maxlength="100" required value="${esc(akce.nazev)}">
+
+      <label for="uprava-datum">Datum a čas</label>
+      <input type="datetime-local" id="uprava-datum" required value="${proDatetimeLocal(akce.datum)}">
+
+      <label for="uprava-popis">Popis (nepovinné)</label>
+      <textarea id="uprava-popis" rows="3">${akce.popis ? esc(akce.popis) : ""}</textarea>
+
+      <button type="submit" class="tlacitko tlacitko-male">Uložit změny</button>
+      <button type="button" class="tlacitko-nenapadne" onclick="nactiAkce()">Zrušit</button>
+    </form>`;
+}
+
+async function ulozUpravuAkce(udalost, akceId) {
+  udalost.preventDefault();
+
+  const nazev = document.getElementById("uprava-nazev").value.trim();
+  const datumHodnota = document.getElementById("uprava-datum").value;
+  const popis = document.getElementById("uprava-popis").value.trim();
+  if (!nazev || !datumHodnota) return;
+
+  const { error } = await sb.from("akce")
+    .update({
+      nazev: nazev,
+      datum: new Date(datumHodnota).toISOString(),
+      popis: popis || null,
+      upraveno: new Date().toISOString(),
+    })
+    .eq("id", akceId);
+
+  if (error) {
+    alert("Úpravu se nepodařilo uložit: " + error.message);
+    return;
+  }
+  await nactiAkce();
 }
 
 // ---------- Hlasování o účasti ----------

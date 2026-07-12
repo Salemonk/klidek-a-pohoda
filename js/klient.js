@@ -79,6 +79,12 @@ async function odhlasit() {
   window.location.href = "index.html";
 }
 
+// Je člen s tímto profilem vedení, nebo admin?
+// (vedení smí: zakládat a upravovat akce, mazat cizí obsah, spravovat pozvánky)
+function jeVedeni(profil) {
+  return !!profil && (profil.role === "vedeni" || profil.role === "admin");
+}
+
 // ---------- Smajlíky ----------
 
 const ZAKLADNI_EMOJI = [

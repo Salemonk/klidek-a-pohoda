@@ -76,7 +76,7 @@ Základ vytváří `supabase/schema.sql`, rozšíření mají vlastní skripty.
 
 | Tabulka     | Účel | Poznámky |
 |-------------|------|----------|
-| `profily`   | přezdívka, `role` (`clen`/`admin`), `avatar` (cesta v bucketu) | PK = `auth.users.id`; řádek vzniká triggerem `po_registraci` při registraci. Trigger (verze z `pozvanky.sql`) zároveň vyžaduje a spotřebuje platný pozvánkový kód z `raw_user_meta_data.pozvanka`, bez něj registraci odmítne (proto nefunguje ani ruční „Add user“ v administraci) |
+| `profily`   | přezdívka, `role` (`clen`/`vedeni`/`admin`), `avatar` (cesta v bucketu) | PK = `auth.users.id`; řádek vzniká triggerem `po_registraci` při registraci. Trigger (verze z `pozvanky.sql`) zároveň vyžaduje a spotřebuje platný pozvánkový kód z `raw_user_meta_data.pozvanka`, bez něj registraci odmítne (proto nefunguje ani ruční „Add user“ v administraci) |
 | `guilda`    | jediný řádek (id=1) se `stav` textem | upravuje jen admin |
 | `akce`      | název, popis, `datum` (timestamptz), autor | mazat smí autor nebo admin |
 | `ucast`     | hlasování `jdu`/`mozna`/`nejdu` | PK (akce, člen), upsert |
@@ -90,8 +90,14 @@ Zabezpečení (RLS):
 
 - Všechny policies jsou `to authenticated`. Role `anon` (nepřihlášený
   s veřejným klíčem) se nedostane k ničemu.
-- `public.je_admin()` je SECURITY DEFINER funkce, používají ji policies
-  pro mazání cizího obsahu a úpravu stavu guildy.
+- Role a práva: `clen` (základ), `vedeni` (navíc: zakládání a úprava akcí,
+  mazání cizích zpráv/příspěvků/obrázků, správa pozvánek), `admin`
+  (navíc: úprava stavu guildy). SECURITY DEFINER funkce `je_admin()`
+  a `je_vedeni()` (admin se počítá jako vedení) používají policies;
+  na webu tomu odpovídá `jeVedeni(profil)` v klient.js.
+- Autor může upravovat vlastní příspěvek; akce upravuje jen vedení.
+  Sloupec `upraveno` (timestamptz) u `prispevky` a `akce` nastavuje
+  klient při každé úpravě, v UI se zobrazuje jako „upraveno“.
 - Člen smí v `profily` měnit jen sloupce `prezdivka` a `avatar`
   (column-level GRANT, roli si zvýšit nemůže).
 - Admin se povyšuje ručně SQL příkazem (NAVOD.md, krok 5).
