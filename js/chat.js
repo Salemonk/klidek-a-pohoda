@@ -96,10 +96,17 @@ function pripravOdesilani() {
   });
 }
 
-// ---------- Zprávy v reálném čase ----------
+// ---------- Zprávy v reálném čase + kdo je online ----------
 
 function pripravRealtime() {
-  sb.channel("chat")
+  // Jeden kanál obstará nové zprávy i přehled přítomných členů.
+  // Presence: každý připojený prohlížeč se "hlásí" pod id svého člena,
+  // Supabase všem rozesílá aktuální seznam přihlášených.
+  const kanal = sb.channel("chat", {
+    config: { presence: { key: mojeId } },
+  });
+
+  kanal
     .on("postgres_changes",
       { event: "INSERT", schema: "public", table: "zpravy" },
       async (payload) => {
@@ -117,7 +124,47 @@ function pripravRealtime() {
         const prvek = document.querySelector(`[data-zprava-id="${payload.old.id}"]`);
         if (prvek) prvek.remove();
       })
-    .subscribe();
+    .on("presence", { event: "sync" }, () => {
+      vykresliOnline(Object.keys(kanal.presenceState()));
+    })
+    .subscribe(async (stav) => {
+      if (stav === "SUBSCRIBED") {
+        await kanal.track({ od: new Date().toISOString() });
+      }
+    });
+}
+
+// ---------- Přehled členů online ----------
+
+async function vykresliOnline(idcka) {
+  const prvek = document.getElementById("online-clenove");
+
+  // Kdyby byl online někdo, koho ještě neznáme, donačteme profily
+  if (idcka.some((id) => !profily[id])) {
+    profily = await nactiVsechnyProfily();
+    avatary = await nactiAdresyAvataru(profily);
+  }
+
+  // Seřadíme podle přezdívky, sebe dáme na začátek
+  const serazena = idcka.slice().sort((a, b) => {
+    if (a === mojeId) return -1;
+    if (b === mojeId) return 1;
+    const jmenoA = profily[a] ? profily[a].prezdivka : "?";
+    const jmenoB = profily[b] ? profily[b].prezdivka : "?";
+    return jmenoA.localeCompare(jmenoB, "cs");
+  });
+
+  const clenove = serazena.map((id) => {
+    const profil = profily[id];
+    const jmeno = profil ? esc(profil.prezdivka) : "?";
+    return `<span class="online-clen">${avatarHtml(profil, avatary[id])}${jmeno}</span>`;
+  }).join("");
+
+  const popisek = idcka.length === 1
+    ? "🟢 Jsi tu teď jen ty:"
+    : `🟢 Online (${idcka.length}):`;
+
+  prvek.innerHTML = `<span class="online-popisek">${popisek}</span>${clenove}`;
 }
 
 // ---------- Smazání zprávy ----------

@@ -80,7 +80,7 @@ Základ vytváří `supabase/schema.sql`, rozšíření mají vlastní skripty.
 | `guilda`    | jediný řádek (id=1) se `stav` textem | upravuje jen admin |
 | `akce`      | název, popis, `datum` (timestamptz), autor | mazat smí autor nebo admin |
 | `ucast`     | hlasování `jdu`/`mozna`/`nejdu` | PK (akce, člen), upsert |
-| `zpravy`    | chat | realtime publikace `supabase_realtime` |
+| `zpravy`    | chat | realtime publikace `supabase_realtime`; kanál „chat“ v chat.js kombinuje postgres_changes (nové/smazané zprávy) a Presence (online členové: klíč = id člena, `track()` po připojení, event `sync` překresluje řádek nad chatem; bez tabulky a SQL) |
 | `prispevky` | nadpis, text, `obrazek` (cesta v bucketu) | |
 | `reakce`    | emoji reakce na příspěvky | PK (příspěvek, člen, emoji) |
 | `webhooky`  | adresy Discord webhooků | **tajná**: RLS bez policies, čte ji jen SECURITY DEFINER funkce |
