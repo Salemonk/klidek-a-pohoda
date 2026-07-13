@@ -262,7 +262,7 @@ jeho text v Discord zprávě zapadne.
 Stránka `vyzvy.html` + `js/vyzvy.js`. Data jsou **statická** (žádná DB
 tabulka): `js/stratagemy-data.js` obsahuje `KATEGORIE_STRATAGEMU` (8 kategorií
 výbavy — podpůrné zbraně jsou rozdělené na `zbran` a `zbran_batoh` podle toho,
-jestli zbraň zabírá slot na zádech) a `STRATAGEMY` (~90 položek, jen výbavové
+jestli zbraň zabírá slot na zádech) a `STRATAGEMY` (~83 položek, jen výbavové
 stratagemy, které si hráč vybírá do loadoutu; misijní stratagemy jako Resupply
 nebo Reinforce se do výbavy nevybírají, proto v datech chybí). Zdroj:
 helldivers.wiki.gg, čistě Helldivers 2 (ne HD1).

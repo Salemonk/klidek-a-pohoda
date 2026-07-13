@@ -441,6 +441,19 @@ textarea { resize: vertical; min-height: 100px; }
   padding: 2px 8px;
 }
 
+.vyzva-nadpis-ikona {
+  height: 1.4em;
+  width: auto;
+  vertical-align: -0.25em;
+  margin-right: 10px;
+}
+.vyzva-ikona-h2 {
+  height: 1.3em;
+  width: auto;
+  vertical-align: -0.2em;
+  margin-right: 8px;
+}
+
 .vyzva-rozbalit summary {
   cursor: pointer;
   font-weight: 700;
@@ -1019,7 +1032,10 @@ select.volba-role {
 @media (max-width: 600px) {
   .hero { padding: 60px 0 50px; }
   .sekce { padding: 40px 0; }
-  .hlavicka-vnitrek { justify-content: center; }
+  /* Kompaktnější hlavička na mobilu: menší mezery, ať menu (6 odkazů
+     + odhlášení) nezabírá zbytečně moc místa nad obsahem */
+  .hlavicka-vnitrek { justify-content: center; padding-top: 8px; padding-bottom: 8px; }
+  .menu { gap: 10px 14px; }
   .chat-okno { height: 50vh; }
   .zprava-text { max-width: 100%; }
 }
