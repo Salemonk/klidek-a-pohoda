@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#12141c">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="stylesheet" href="css/styl.css?v=21">
+  <link rel="stylesheet" href="css/styl.css?v=22">
 </head>
 <body>
 
@@ -33,9 +33,17 @@
 
       <div class="panel-blok lfg-panel">
         <h2><span class="ikona">🎮</span>Hledáš parťáky hned teď?</h2>
-        <p class="poznamka" style="margin-top:0;">Klikni a do Discordu (#hledám-partu)
-        přiletí výzva pro celou roli @Hledám hráče.</p>
-        <button id="tlacitko-lfg" class="tlacitko">🎮 Hledám hráče!</button>
+        <p class="poznamka" style="margin-top:0;">Klikni a do Discordu (#hledám-partu) přiletí
+        zpráva pro celou roli @Hledám hráče. Napiš si, co chceš hrát, přímo do věty:</p>
+
+        <div class="lfg-sablona">
+          🎮 <strong id="lfg-jmeno">Ty</strong> hledá partu
+          (<input type="text" id="lfg-text" maxlength="80" placeholder="co chceš hrát">),
+          kdo má teď čas? <span class="lfg-role-znacka">@Hledám hráče</span>
+        </div>
+        <p class="poznamka" id="lfg-nahled" style="margin-top:8px;"></p>
+
+        <button id="tlacitko-lfg" class="tlacitko" style="margin-top:10px;">🎮 Hledám hráče!</button>
         <div id="lfg-hlaska" class="poznamka" style="margin-top:8px;"></div>
       </div>
 
@@ -116,10 +124,10 @@
     </div>
   </main>
 
-  <script src="js/config.js?v=17"></script>
+  <script src="js/config.js?v=19"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/klient.js?v=17"></script>
-  <script src="js/clenska-sekce.js?v=17"></script>
+  <script src="js/klient.js?v=19"></script>
+  <script src="js/clenska-sekce.js?v=19"></script>
   <script src="js/pwa.js?v=1"></script>
 </body>
 </html>

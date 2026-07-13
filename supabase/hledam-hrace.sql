@@ -26,18 +26,27 @@ insert into public.webhooky (id, url) values
   ('lfg', 'DOPLNTE')
 on conflict (id) do update set url = excluded.url;
 
--- 3) Funkce, kterou volá web po kliknutí na tlačítko
-create or replace function public.posli_lfg_vyzvu()
+-- 3) Funkce, kterou volá web po kliknutí na tlačítko.
+--    Parametr co_hrajeme je nepovinný (co člen napsal do textového
+--    pole "Co chceš hrát?") a přidá se do zprávy v závorce.
+--
+--    Pokud jste dřív spustili starší verzi bez parametru, tenhle
+--    řádek ji nejdřív odstraní, ať v databázi nezůstanou viset dvě
+--    verze vedle sebe.
+drop function if exists public.posli_lfg_vyzvu();
+
+create or replace function public.posli_lfg_vyzvu(co_hrajeme text default null)
 returns void
 language plpgsql
 security definer
 set search_path = public
 as $$
 declare
-  webhook  text;
-  muj_stav record;
-  cekani   interval := interval '15 minutes';
-  zbyva    numeric;
+  webhook   text;
+  muj_stav  record;
+  cekani    interval := interval '15 minutes';
+  zbyva     numeric;
+  parenteze text := '';
 begin
   select prezdivka, posledni_lfg into muj_stav
   from profily where id = auth.uid();
@@ -52,11 +61,16 @@ begin
     raise exception 'Webhook pro Hledám hráče není nastavený.';
   end if;
 
+  if co_hrajeme is not null and trim(co_hrajeme) <> '' then
+    parenteze := ' (' || trim(co_hrajeme) || ')';
+  end if;
+
   perform net.http_post(
     url := webhook,
     headers := '{"Content-Type": "application/json"}'::jsonb,
     body := jsonb_build_object('content',
-      '🎮 **' || muj_stav.prezdivka || '** hledá partu, kdo má teď čas? <@&DOPLNTE_ROLE_ID>'
+      '🎮 **' || muj_stav.prezdivka || '** hledá partu' || parenteze
+      || ', kdo má teď čas? <@&DOPLNTE_ROLE_ID>'
     )
   );
 
@@ -64,4 +78,4 @@ begin
 end;
 $$;
 
-grant execute on function public.posli_lfg_vyzvu() to authenticated;
+grant execute on function public.posli_lfg_vyzvu(text) to authenticated;

@@ -32,13 +32,31 @@ async function spustStranku() {
 function pripravLfgTlacitko() {
   const tlacitko = document.getElementById("tlacitko-lfg");
   const hlaska = document.getElementById("lfg-hlaska");
+  const pole = document.getElementById("lfg-text");
+  const jmenoVSablone = document.getElementById("lfg-jmeno");
+  const nahled = document.getElementById("lfg-nahled");
+
+  const prezdivka = mujProfil ? mujProfil.prezdivka : "Ty";
+  jmenoVSablone.textContent = prezdivka;
+
+  // Přesný živý náhled toho, co přesně přiletí do Discordu
+  // (stejná logika jako v SQL funkci posli_lfg_vyzvu)
+  function aktualizujNahled() {
+    const co = pole.value.trim();
+    const zavorka = co ? ` (${co})` : "";
+    nahled.textContent =
+      `Přesně takhle to přiletí do Discordu: 🎮 ${prezdivka} hledá partu${zavorka}, kdo má teď čas? @Hledám hráče`;
+  }
+  pole.addEventListener("input", aktualizujNahled);
+  aktualizujNahled();
 
   tlacitko.addEventListener("click", async () => {
     tlacitko.disabled = true;
     hlaska.textContent = "";
     hlaska.style.color = "";
 
-    const { error } = await sb.rpc("posli_lfg_vyzvu");
+    const co = pole.value.trim();
+    const { error } = await sb.rpc("posli_lfg_vyzvu", { co_hrajeme: co || null });
 
     if (error) {
       hlaska.textContent = error.message;
@@ -46,6 +64,8 @@ function pripravLfgTlacitko() {
     } else {
       hlaska.textContent = "Výzva odeslána! 🎮 Sleduj Discord, ať tě neminou odpovědi.";
       hlaska.style.color = "var(--akcent)";
+      pole.value = "";
+      aktualizujNahled();
     }
     tlacitko.disabled = false;
   });

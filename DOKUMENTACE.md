@@ -109,6 +109,7 @@ Základ vytváří `supabase/schema.sql`, rozšíření mají vlastní skripty.
 | `zpravy.odpoved_na` | odpověď na zprávu v chatu (citace) | FK na `zpravy.id`, `on delete set null`; skript `odpovedi-chat.sql`. Žádná nová RLS pravidla (existující pravidla platí na celý řádek) |
 | `webhooky`  | adresy Discord webhooků | **tajná**: RLS bez policies, čte ji jen SECURITY DEFINER funkce |
 | `pozvanky`  | jednorázové registrační kódy (platnost 7 dní) | vidí/spravuje jen admin; RPC `over_pozvanku(kod)` smí volat i `anon` a vrací jen ano/ne |
+| `profily.posledni_lfg` | čas posledního použití tlačítka „Hledám hráče“ | slouží jen k 15minutovému cooldownu proti spamu; skript `hledam-hrace.sql` |
 
 Zabezpečení (RLS):
 
@@ -236,6 +237,22 @@ se mohou rozbít nekompatibilitou skriptů. HTML samotné se neverzuje.
    do `klient.js`.
 3. Uživatelský obsah vždy přes `esc()`. Texty česky, bez pomlček.
 4. Zvednout `?v=` verze, otestovat lokálně, nasadit batem.
+
+## Tlačítko „Hledám hráče“ (LFG)
+
+Panel na `clenska-sekce.html` (Přehled), skript `hledam-hrace.sql`.
+RPC `posli_lfg_vyzvu(co_hrajeme text default null)`: kontroluje
+15minutový cooldown (`profily.posledni_lfg`), pak přes webhook `lfg`
+(tabulka `webhooky`) pošle zprávu se zmínkou Discord role (role ID je
+natvrdo v textu funkce, není to tajemství jako webhook URL, ale při
+změně role je potřeba funkci znovu `create or replace`).
+
+Web ukazuje **živý náhled** přesné výsledné zprávy (`#lfg-nahled`
+v `clenska-sekce.js`, funkce `aktualizujNahled()`) — logika sestavení
+textu (závorka s obsahem pole, jen když není prázdné) je zrcadlená
+1:1 s tím, co dělá SQL funkce. Textové pole `#lfg-text` je vložené
+přímo do věty šablony (`.lfg-sablona`), aby člen viděl, kam přesně
+jeho text v Discord zprávě zapadne.
 
 ## Provoz a údržba
 
