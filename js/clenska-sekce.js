@@ -16,6 +16,7 @@ async function spustStranku() {
     document.getElementById("prezdivka").value = mujProfil.prezdivka;
   }
 
+  pripravLfgTlacitko();
   await nactiStavGuildy();
   await nactiNejblizsiAkce();
   pripravUpravuStavu();
@@ -24,6 +25,30 @@ async function spustStranku() {
   await pripravSpravuAvataru(session.user.id);
   await pripravPozvanky();
   await pripravPrehledClenu();
+}
+
+// ---------- Hledám hráče (LFG) ----------
+
+function pripravLfgTlacitko() {
+  const tlacitko = document.getElementById("tlacitko-lfg");
+  const hlaska = document.getElementById("lfg-hlaska");
+
+  tlacitko.addEventListener("click", async () => {
+    tlacitko.disabled = true;
+    hlaska.textContent = "";
+    hlaska.style.color = "";
+
+    const { error } = await sb.rpc("posli_lfg_vyzvu");
+
+    if (error) {
+      hlaska.textContent = error.message;
+      hlaska.style.color = "var(--chyba)";
+    } else {
+      hlaska.textContent = "Výzva odeslána! 🎮 Sleduj Discord, ať tě neminou odpovědi.";
+      hlaska.style.color = "var(--akcent)";
+    }
+    tlacitko.disabled = false;
+  });
 }
 
 // ---------- Stav guildy ----------

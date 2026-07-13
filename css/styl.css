@@ -384,6 +384,8 @@ textarea { resize: vertical; min-height: 100px; }
 .panel-blok h2 { font-size: 1.2rem; color: var(--text); margin-bottom: 0.8rem; }
 .panel-blok h2 .ikona { margin-right: 6px; }
 
+.lfg-panel { border-color: var(--akcent-2); }
+
 .stitek {
   display: inline-block;
   background: rgba(245, 168, 58, 0.15);
