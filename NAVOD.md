@@ -131,6 +131,58 @@ Web jsou obyčejné soubory, funguje na jakémkoli hostingu:
 - **GitHub Pages (zdarma):** také funguje. Pozor jen na to, že kód webu je pak
   veřejně vidět, to ničemu nevadí (členská data chrání Supabase), jen o tom vězte.
 
+## Krok 8: Provoz a údržba (volitelné, ale doporučené)
+
+Tyto dva kroky nejsou nutné, aby web fungoval, ale vyplatí se je udělat
+jednou a mít pak klid.
+
+### Hlídač proti uspání (ať Supabase nikdy neusne)
+
+Bezplatný tarif Supabase projekt uspí, když se na něj 7 dní v kuse nikdo
+nepodívá (guilda se pak "probouzí" o pár vteřin déle). Bezplatná služba
+**UptimeRobot** tomu zabrání tak, že projekt bude pravidelně "šťouchat".
+
+1. Jděte na **https://uptimerobot.com** a zdarma se zaregistrujte.
+2. Klikněte na **Add New Monitor**:
+   - **Monitor Type:** HTTP(s)
+   - **Friendly Name:** např. `Klídek a pohoda — web`
+   - **URL:** adresa vašeho webu (např. `https://salemonk.github.io/klidek-a-pohoda/`)
+   - **Monitoring Interval:** 5 minut
+   - Uložit.
+3. Klikněte znovu na **Add New Monitor** a přidejte druhý, tentokrát
+   pro samotnou databázi:
+   - **Monitor Type:** HTTP(s)
+   - **Friendly Name:** např. `Klídek a pohoda — databáze`
+   - **URL:** vaše Supabase Project URL doplněná takto (nahraďte obě
+     části vlastními hodnotami ze souboru `js/config.js`):
+     `https://VASE-PROJECT-URL.supabase.co/rest/v1/guilda?select=id&limit=1&apikey=VAS_ANON_KLIC`
+   - Uložit.
+
+Jako bonus vám UptimeRobot pošle e-mail, kdyby byl web někdy nedostupný
+(třeba kvůli výpadku GitHubu) — užitečné vědět dřív, než si toho všimne
+někdo z guildy.
+
+### Zálohování dat
+
+Soubory webu máte bezpečně u sebe v této složce (a v historii na GitHubu).
+Databázi (zprávy, akce, příspěvky, profily) doporučujeme čas od času
+ručně zálohovat:
+
+1. V administraci Supabase otevřete **SQL Editor**.
+2. Spusťte dotaz na tabulku, kterou chcete zálohovat, např.:
+   ```sql
+   select * from public.prispevky order by vytvoreno;
+   ```
+3. Nad výsledkem tabulky klikněte na tlačítko **Download CSV** (nebo
+   podobné, podle verze rozhraní) — stáhne se vám soubor s daty.
+4. Zopakujte pro důležité tabulky: `profily`, `akce`, `zpravy`,
+   `prispevky`, `ankety`.
+
+Stačí to udělat třeba jednou za měsíc a soubory si uložit vedle sebe
+(např. do složky pojmenované datem). Obrázky a avatary jsou uložené
+zvlášť v **Storage** (Supabase) — jejich zálohování je složitější a pro
+malou guildu obvykle není potřeba řešit.
+
 ---
 
 ## Časté dotazy
@@ -150,8 +202,8 @@ i profil a hlasování; jeho zprávy a příspěvky zůstanou (zobrazí se u nic
 Upravte `index.html`, místa k úpravě jsou označená komentářem `<!-- UPRAVTE: … -->`.
 
 **Co je potřeba zálohovat?**
-Soubory webu máte u sebe v této složce. Databázi lze exportovat v administraci
-Supabase (**Database → Backups**; na bezplatném tarifu denní záloha).
+Viz **Krok 8: Provoz a údržba** výše — soubory webu máte v této složce,
+databázi doporučujeme čas od času ručně stáhnout přes SQL Editor.
 
 ---
 
@@ -177,3 +229,7 @@ Supabase (**Database → Backups**; na bezplatném tarifu denní záloha).
   pg_cron (pokud se nezapne samo, povolte v Database → Extensions → pg_cron).
 - `supabase/ankety.sql`: ankety s hlasováním (stránka Ankety v členské sekci).
 - `supabase/odpovedi-chat.sql`: odpovědi na zprávu (citace) v chatu.
+- `supabase/automaticky-uklid.sql`: jednou týdně smaže staré nevyužité
+  pozvánky. Mazání starých zpráv z chatu je v souboru vypnuté (volitelné,
+  viz komentář ve skriptu) — je to citlivé rozhodnutí, které má udělat
+  vědomě správce.

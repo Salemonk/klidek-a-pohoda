@@ -237,6 +237,28 @@ se mohou rozbít nekompatibilitou skriptů. HTML samotné se neverzuje.
 3. Uživatelský obsah vždy přes `esc()`. Texty česky, bez pomlček.
 4. Zvednout `?v=` verze, otestovat lokálně, nasadit batem.
 
+## Provoz a údržba
+
+**Hlídač proti uspání:** doporučeno (ne vynuceno kódem) — dva monitory
+v UptimeRobot (zdarma): jeden na samotný web, druhý na
+`https://[project].supabase.co/rest/v1/guilda?select=id&limit=1&apikey=[publishable klíč]`
+(RLS anon roli vrátí prázdné pole `[]`, 200 OK — žádná data neuniknou,
+ale požadavek se počítá jako aktivita a projekt se neuspí). Postup pro
+uživatele: NAVOD.md, Krok 8.
+
+**Automatický úklid** (`supabase/automaticky-uklid.sql`): pg_cron job
+„uklid-databaze-kap" (neděle 4:00) maže jen propadlé nevyužité pozvánky
+starší 30 dní. Mazání starých zpráv chatu je v souboru záměrně
+zakomentované — je to citlivé rozhodnutí (ztráta obsahu členů), nemá se
+dít tiše samo. Pokud se to bude v budoucnu implementovat, patří sem i UI
+upozornění/nastavitelná retence, ne jen odkomentovaný řádek.
+
+**Zálohy:** žádný automatizovaný export v kódu (šlo by o netriviální
+řešení kvůli Storage souborům) — doporučený postup je ruční CSV export
+z SQL Editoru (NAVOD.md, Krok 8). Necharakterizovat svévolně, jestli
+bezplatný tarif Supabase nabízí stahovatelné zálohy v Database → Backups —
+rozhraní Supabase se v čase mění, ověřit aktuální stav před tvrzením.
+
 ## Známé vlastnosti a omezení
 
 - Bezplatný tarif Supabase: projekt se po 7 dnech bez požadavku uspí
