@@ -4,6 +4,7 @@
 // ============================================================
 
 let sb = null; // klient Supabase, vytvoří se v inicializujSupabase()
+let posledniProfilyMapa = {}; // poslední načtená mapa profilů (pro mini profil)
 
 // Zjistí, jestli je vyplněná konfigurace v js/config.js
 function jeKonfiguraceVyplnena() {
@@ -43,6 +44,9 @@ async function vyzadujPrihlaseni() {
     window.location.href = "prihlaseni.html";
     return null;
   }
+  // Na pozadí (bez čekání) zkontrolujeme nepřečtené zprávy v chatu
+  // a promítneme je jako značku u odkazu "Chat" v menu.
+  zkontrolujNeprectenyChat();
   return session;
 }
 
@@ -62,14 +66,19 @@ async function nactiMujProfil(uzivatelId) {
 
 // Načte všechny profily a vrátí je jako mapu { id: profil }
 // (guilda má max. desítky členů, takže je to v pořádku)
+//
+// Mapa se navíc uloží do posledniProfilyMapa, aby k ní mohl přistupovat
+// mini profil člena (otevriMiniProfil) bez ohledu na to, na které
+// stránce a v jaké proměnné si ji volající kód zrovna drží.
 async function nactiVsechnyProfily() {
-  const { data, error } = await sb.from("profily").select("id, prezdivka, role, avatar");
+  const { data, error } = await sb.from("profily").select("id, prezdivka, role, avatar, vytvoreno");
   if (error) {
     console.error("Nepodařilo se načíst profily:", error);
     return {};
   }
   const mapa = {};
   for (const profil of data) mapa[profil.id] = profil;
+  posledniProfilyMapa = mapa;
   return mapa;
 }
 
@@ -265,11 +274,110 @@ async function nactiAdresyAvataru(profilyMapa) {
   return vysledek;
 }
 
-// Kolečko s avatarem; kdo avatar nemá, dostane první písmeno přezdívky
-function avatarHtml(profil, adresa) {
-  if (adresa) return `<img class="avatar" src="${adresa}" alt="">`;
+// Kolečko s avatarem; kdo avatar nemá, dostane první písmeno přezdívky.
+// Když je klikatelne (výchozí), kliknutím se otevře mini profil člena.
+function avatarHtml(profil, adresa, klikatelne = true) {
+  const jeKlikaci = klikatelne && profil && profil.id;
+  const trida = "avatar" + (jeKlikaci ? " avatar-klikatelny" : "");
+  const klikAtribut = jeKlikaci
+    ? ` onclick="otevriMiniProfil('${profil.id}')" title="Zobrazit profil"`
+    : "";
+
+  if (adresa) return `<img class="${trida}" src="${adresa}" alt=""${klikAtribut}>`;
   const pismeno = profil && profil.prezdivka ? profil.prezdivka.charAt(0).toUpperCase() : "?";
-  return `<span class="avatar avatar-pismeno">${esc(pismeno)}</span>`;
+  return `<span class="${trida}"${klikAtribut}>${esc(pismeno)}</span>`;
+}
+
+// ---------- Mini profil člena (klik na avatar) ----------
+
+const POPISKY_ROLI_PROFIL = { clen: "člen", vedeni: "vedení", admin: "admin" };
+
+async function otevriMiniProfil(clenId) {
+  const profil = posledniProfilyMapa[clenId];
+  if (!profil) return;
+
+  let adresaAvataru = null;
+  if (profil.avatar) {
+    const mapa = await ziskejPodepsaneAdresy("avatary", [profil.avatar]);
+    adresaAvataru = mapa[profil.avatar] || null;
+  }
+
+  let podklad = document.getElementById("mini-profil-podklad");
+  if (!podklad) {
+    podklad = document.createElement("div");
+    podklad.id = "mini-profil-podklad";
+    podklad.className = "modal-podklad";
+    podklad.hidden = true;
+    podklad.addEventListener("click", (udalost) => {
+      if (udalost.target === podklad) zavriMiniProfil();
+    });
+    document.body.appendChild(podklad);
+  }
+
+  const popisRole = POPISKY_ROLI_PROFIL[profil.role] || profil.role;
+
+  podklad.innerHTML = `
+    <div class="mini-profil">
+      <button class="modal-zavrit" onclick="zavriMiniProfil()" aria-label="Zavřít">✖</button>
+      <div class="mini-profil-avatar">${avatarHtml(profil, adresaAvataru, false)}</div>
+      <h3>${esc(profil.prezdivka)}</h3>
+      <span class="stitek">${esc(popisRole)}</span>
+      <p class="poznamka">Členem od ${profil.vytvoreno ? formatujDatumKratce(profil.vytvoreno) : "?"}</p>
+    </div>`;
+  podklad.hidden = false;
+}
+
+function zavriMiniProfil() {
+  const podklad = document.getElementById("mini-profil-podklad");
+  if (podklad) podklad.hidden = true;
+}
+
+// ---------- Nepřečtené zprávy v chatu (značka u odkazu "Chat") ----------
+
+const KLIC_POSLEDNI_CHAT = "kap-posledni-precteny-chat";
+
+// Uloží, dokdy má člen chat přečtený (voláno z chat.js při otevření
+// a při každé nové zprávě, dokud je chat otevřený)
+function oznacChatPrecteny(casIso) {
+  try {
+    localStorage.setItem(KLIC_POSLEDNI_CHAT, casIso || new Date().toISOString());
+  } catch (e) { /* nedostupné úložiště (soukromé okno apod.) nevadí */ }
+}
+
+// Zjistí počet nepřečtených zpráv a promítne ho jako značku u "Chat" v menu
+async function zkontrolujNeprectenyChat() {
+  const odkaz = document.querySelector('a[href="chat.html"]');
+  if (!odkaz) return;
+
+  let posledni;
+  try { posledni = localStorage.getItem(KLIC_POSLEDNI_CHAT); } catch (e) { return; }
+
+  if (!posledni) {
+    // Poprvé s touto funkcí — historii nezobrazujeme jako nepřečtenou,
+    // počítáme až od teď
+    oznacChatPrecteny();
+    return;
+  }
+
+  const { count } = await sb.from("zpravy")
+    .select("id", { count: "exact", head: true })
+    .gt("vytvoreno", posledni);
+
+  nastavZnackuChatu(odkaz, count || 0);
+}
+
+function nastavZnackuChatu(odkaz, pocet) {
+  let znacka = odkaz.querySelector(".pocitadlo-znacka");
+  if (pocet > 0) {
+    if (!znacka) {
+      znacka = document.createElement("span");
+      znacka.className = "pocitadlo-znacka";
+      odkaz.appendChild(znacka);
+    }
+    znacka.textContent = pocet > 9 ? "9+" : String(pocet);
+  } else if (znacka) {
+    znacka.remove();
+  }
 }
 
 // ---------- Zmenšení obrázku před nahráním ----------
@@ -381,6 +489,11 @@ function formatujCasChatu(iso) {
   const datum = new Date(iso);
   return datum.toLocaleDateString("cs-CZ", { day: "numeric", month: "numeric" })
     + " " + datum.toLocaleTimeString("cs-CZ", { hour: "2-digit", minute: "2-digit" });
+}
+
+// Krátký formát data bez času, např. "12.7.2026"
+function formatujDatumKratce(iso) {
+  return new Date(iso).toLocaleDateString("cs-CZ");
 }
 
 // Zobrazí / skryje hlášku (chybovou nebo úspěšnou)

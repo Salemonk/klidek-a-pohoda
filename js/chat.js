@@ -6,6 +6,8 @@ let mujProfil = null;
 let mojeId = null;
 let profily = {};
 let avatary = {}; // id člena → adresa avataru
+let zpravyMapa = {}; // id zprávy → zpráva (pro zobrazení citace u odpovědi)
+let odpovidamNa = null; // id zprávy, na kterou se právě odpovídá
 
 async function spustStranku() {
   const session = await vyzadujPrihlaseni();
@@ -30,7 +32,7 @@ async function nactiZpravy() {
   // Posledních 100 zpráv (načteme od nejnovějších a otočíme)
   const { data, error } = await sb
     .from("zpravy")
-    .select("id, autor, text, vytvoreno")
+    .select("id, autor, text, vytvoreno, odpoved_na")
     .order("vytvoreno", { ascending: false })
     .limit(100);
 
@@ -43,7 +45,10 @@ async function nactiZpravy() {
   if (data.length === 0) {
     okno.innerHTML = `<p class="poznamka">Zatím tu nejsou žádné zprávy. Napiš první! 🙂</p>`;
   } else {
-    for (const zprava of data.reverse()) pridejZpravuDoOkna(zprava);
+    const serazene = data.reverse();
+    for (const zprava of serazene) pridejZpravuDoOkna(zprava);
+    // Chat jsme právě otevřeli — poslední zprávu bereme jako přečtenou
+    oznacChatPrecteny(serazene[serazene.length - 1].vytvoreno);
   }
   posunDolu();
 }
@@ -56,6 +61,8 @@ function pridejZpravuDoOkna(zprava) {
   const jeMoje = zprava.autor === mojeId;
   const smiSmazat = jeMoje || jeVedeni(mujProfil);
 
+  zpravyMapa[zprava.id] = zprava;
+
   const prvek = document.createElement("div");
   prvek.className = "zprava" + (jeMoje ? " zprava-moje" : "");
   prvek.dataset.zpravaId = zprava.id;
@@ -64,10 +71,24 @@ function pridejZpravuDoOkna(zprava) {
       ${avatarHtml(profil, avatary[zprava.autor])}
       <span class="zprava-autor">${profil ? esc(profil.prezdivka) : "?"}</span>
       <span class="zprava-cas">${formatujCasChatu(zprava.vytvoreno)}</span>
+      <button class="zprava-odpovedet" onclick="pripravOdpoved(${zprava.id})" title="Odpovědět">↩</button>
       ${smiSmazat ? `<button class="zprava-smazat" onclick="smazZpravu(${zprava.id})" title="Smazat zprávu">✖</button>` : ""}
     </div>
+    ${citaceHtml(zprava.odpoved_na)}
     <div class="zprava-text">${linkujOdkazy(esc(zprava.text))}</div>`;
   okno.appendChild(prvek);
+}
+
+// Malý citovaný úryvek nad zprávou, na kterou se odpovídá
+function citaceHtml(odpovedNaId) {
+  if (!odpovedNaId) return "";
+  const puvodni = zpravyMapa[odpovedNaId];
+  if (!puvodni) return `<div class="zprava-citace zprava-citace-chybi">Odpověď na starší zprávu, která už tu není vidět</div>`;
+
+  const autorPuvodni = profily[puvodni.autor];
+  const jmeno = autorPuvodni ? esc(autorPuvodni.prezdivka) : "?";
+  const uryvek = esc(puvodni.text.length > 80 ? puvodni.text.slice(0, 80) + "…" : puvodni.text);
+  return `<div class="zprava-citace"><strong>${jmeno}:</strong> ${uryvek}</div>`;
 }
 
 function posunDolu() {
@@ -86,14 +107,43 @@ function pripravOdesilani() {
     const text = pole.value.trim();
     if (!text) return;
 
+    const odpovedId = odpovidamNa;
     pole.value = "";
-    const { error } = await sb.from("zpravy").insert({ autor: mojeId, text: text });
+    zrusOdpoved();
+
+    const { error } = await sb.from("zpravy")
+      .insert({ autor: mojeId, text: text, odpoved_na: odpovedId });
     if (error) {
       alert("Zprávu se nepodařilo odeslat: " + error.message);
       pole.value = text; // vrátíme text zpět, ať o něj člen nepřijde
     }
     pole.focus();
   });
+}
+
+// ---------- Odpověď na zprávu (citace) ----------
+
+function pripravOdpoved(zpravaId) {
+  const puvodni = zpravyMapa[zpravaId];
+  if (!puvodni) return;
+
+  odpovidamNa = zpravaId;
+  const autorPuvodni = profily[puvodni.autor];
+  const jmeno = autorPuvodni ? esc(autorPuvodni.prezdivka) : "?";
+  const uryvek = esc(puvodni.text.length > 60 ? puvodni.text.slice(0, 60) + "…" : puvodni.text);
+
+  const banner = document.getElementById("odpoved-banner");
+  banner.innerHTML = `Odpovídáš na <strong>${jmeno}</strong>: ${uryvek}
+    <button type="button" onclick="zrusOdpoved()" title="Zrušit odpověď">✖</button>`;
+  banner.hidden = false;
+  document.getElementById("chat-text").focus();
+}
+
+function zrusOdpoved() {
+  odpovidamNa = null;
+  const banner = document.getElementById("odpoved-banner");
+  banner.hidden = true;
+  banner.innerHTML = "";
 }
 
 // ---------- Zprávy v reálném čase + kdo je online ----------
@@ -117,6 +167,8 @@ function pripravRealtime() {
         }
         pridejZpravuDoOkna(payload.new);
         posunDolu();
+        // Chat je otevřený, takže i nová zpráva se rovnou počítá za přečtenou
+        oznacChatPrecteny(payload.new.vytvoreno);
       })
     .on("postgres_changes",
       { event: "DELETE", schema: "public", table: "zpravy" },

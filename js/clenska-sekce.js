@@ -145,7 +145,7 @@ async function obnovNahledAvataru() {
     const mapa = await nactiAdresyAvataru({ [mujProfil.id]: mujProfil });
     adresa = mapa[mujProfil.id] || null;
   }
-  nahled.innerHTML = avatarHtml(mujProfil, adresa);
+  nahled.innerHTML = avatarHtml(mujProfil, adresa, false);
 }
 
 async function pripravSpravuAvataru(uzivatelId) {
@@ -305,10 +305,7 @@ async function smazPozvanku(kod) {
 let nacteniClenove = []; // naposledy načtený seznam členů
 
 const POPISKY_ROLI = { clen: "člen", vedeni: "vedení", admin: "admin" };
-
-function formatujDatumKratce(iso) {
-  return new Date(iso).toLocaleDateString("cs-CZ");
-}
+// formatujDatumKratce() je teď sdílená funkce v klient.js
 
 async function pripravPrehledClenu() {
   if (!mujProfil || mujProfil.role !== "admin") return;

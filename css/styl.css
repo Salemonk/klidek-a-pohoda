@@ -123,6 +123,22 @@ p + p { margin-top: 0.75rem; }
 .menu a.tlacitko { color: var(--text-na-akcentu); }
 .menu a.tlacitko:hover { color: var(--text-na-akcentu); }
 
+.pocitadlo-znacka {
+  display: inline-block;
+  background: var(--akcent-2);
+  color: var(--text-na-akcentu);
+  font-size: 0.7rem;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  line-height: 16px;
+  text-align: center;
+  border-radius: 999px;
+  padding: 0 4px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
 /* ---------- Tlačítka ---------- */
 
 .tlacitko {
@@ -482,6 +498,45 @@ textarea { resize: vertical; min-height: 100px; }
 }
 .zprava-smazat:hover { color: var(--chyba); }
 
+.zprava-odpovedet {
+  background: none; border: none; color: var(--text-tlumeny);
+  cursor: pointer; font-size: 0.8rem; margin-left: 6px;
+}
+.zprava-odpovedet:hover { color: var(--akcent); }
+
+.zprava-citace {
+  border-left: 3px solid var(--akcent);
+  background: var(--panel);
+  color: var(--text-tlumeny);
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  margin-bottom: 4px;
+  border-radius: 4px;
+  max-width: 85%;
+}
+.zprava-citace strong { color: var(--akcent); }
+.zprava-citace-chybi { font-style: italic; }
+
+.odpoved-banner {
+  background: var(--panel-svetly);
+  border-left: 3px solid var(--akcent);
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  color: var(--text-tlumeny);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.odpoved-banner strong { color: var(--akcent); }
+.odpoved-banner button {
+  background: none; border: none; color: var(--text-tlumeny);
+  cursor: pointer; font-size: 0.9rem; flex-shrink: 0;
+}
+.odpoved-banner button:hover { color: var(--chyba); }
+
 .chat-formular { display: flex; gap: 10px; }
 .chat-formular input { flex: 1; margin-bottom: 0; }
 
@@ -786,7 +841,10 @@ select.volba-role {
   margin-right: 6px;
   border: 1px solid var(--ohraniceni);
   display: inline-block;
+  transition: border-color 0.15s, transform 0.15s;
 }
+.avatar-klikatelny { cursor: pointer; }
+.avatar-klikatelny:hover { border-color: var(--akcent); transform: scale(1.08); }
 .avatar-pismeno {
   background: var(--panel);
   color: var(--akcent);
@@ -835,6 +893,55 @@ select.volba-role {
   border-radius: 4px;
   font-size: 0.95em;
 }
+
+/* ---------- Mini profil člena (modální okno po kliku na avatar) ---------- */
+
+.modal-podklad {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 100;
+}
+.modal-podklad[hidden] { display: none; }
+
+.mini-profil {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--ohraniceni);
+  border-radius: 14px;
+  padding: 28px;
+  text-align: center;
+  max-width: 300px;
+  width: 100%;
+}
+.mini-profil-avatar .avatar {
+  width: 72px;
+  height: 72px;
+  line-height: 70px;
+  font-size: 1.6rem;
+  margin-right: 0;
+  margin-bottom: 10px;
+  cursor: default;
+}
+.mini-profil-avatar .avatar:hover { transform: none; border-color: var(--ohraniceni); }
+.mini-profil h3 { margin-bottom: 6px; }
+.mini-profil .poznamka { margin-top: 10px; }
+
+.modal-zavrit {
+  position: absolute;
+  top: 10px; right: 10px;
+  background: none;
+  border: none;
+  color: var(--text-tlumeny);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.modal-zavrit:hover { color: var(--chyba); }
 
 /* ---------- Mobily ---------- */
 

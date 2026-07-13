@@ -176,3 +176,4 @@ Supabase (**Database → Backups**; na bezplatném tarifu denní záloha).
   (den a hodinu předem). Vyžaduje běžící `discord-upozorneni.sql` a rozšíření
   pg_cron (pokud se nezapne samo, povolte v Database → Extensions → pg_cron).
 - `supabase/ankety.sql`: ankety s hlasováním (stránka Ankety v členské sekci).
+- `supabase/odpovedi-chat.sql`: odpovědi na zprávu (citace) v chatu.

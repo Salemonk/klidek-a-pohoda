@@ -106,6 +106,7 @@ Základ vytváří `supabase/schema.sql`, rozšíření mají vlastní skripty.
 | `prispevky` | nadpis, text, `obrazek` (cesta v bucketu) | |
 | `reakce`    | emoji reakce na příspěvky | PK (příspěvek, člen, emoji) |
 | `ankety` + `ankety_moznosti` + `ankety_hlasy` | ankety s hlasováním | zakládá každý člen, hlasují všichni (1 hlas/anketa, PK anketa+člen), maže/uzavírá autor nebo vedení; skript `ankety.sql` |
+| `zpravy.odpoved_na` | odpověď na zprávu v chatu (citace) | FK na `zpravy.id`, `on delete set null`; skript `odpovedi-chat.sql`. Žádná nová RLS pravidla (existující pravidla platí na celý řádek) |
 | `webhooky`  | adresy Discord webhooků | **tajná**: RLS bez policies, čte ji jen SECURITY DEFINER funkce |
 | `pozvanky`  | jednorázové registrační kódy (platnost 7 dní) | vidí/spravuje jen admin; RPC `over_pozvanku(kod)` smí volat i `anon` a vrací jen ano/ne |
 
@@ -147,6 +148,35 @@ webhook „akce“ připomínku den (3–24 h) a hodinu (do 60 min) před akcí.
 Sloupce `akce.pripomenuto_den` a `akce.pripomenuto_hodina` brání dvojímu
 odeslání; editace akce s novým datem je v akce.js vynuluje (re-remind).
 Časy v Discordu jsou `<t:epoch:R/F>` (relativní/plný, lokalizované u každého).
+
+## Quality of life (chat a profily)
+
+**Nepřečtené zprávy v chatu:** `zkontrolujNeprectenyChat()` v klient.js se
+volá tiše (fire-and-forget, bez čekání) z `vyzadujPrihlaseni()` na každé
+členské stránce. Porovnává localStorage klíč `kap-posledni-precteny-chat`
+s počtem zpráv novějších než tento čas a promítne značku (`.pocitadlo-znacka`,
+strop „9+") u odkazu „Chat" v menu — dynamicky přes JS, žádné úpravy HTML
+navigace nebyly potřeba. Chat.js volá `oznacChatPrecteny(casIso)` při
+otevření chatu i při každé nové realtime zprávě, dokud je stránka otevřená.
+Při úplně první návštěvě (žádný záznam v localStorage) se historie
+nepočítá jako nepřečtená, jen se nastaví „teď".
+
+**Odpovědi na zprávu (citace):** sloupec `zpravy.odpoved_na` (skript
+`odpovedi-chat.sql`). Tlačítko ↩ u zprávy zavolá `pripravOdpoved(id)`,
+zobrazí banner „Odpovídáš na…" nad formulářem; odeslání zprávy do něj
+zabalí `odpoved_na`. Vykreslení citace (`citaceHtml()` v chat.js) hledá
+originál v `zpravyMapa` (mapa id→zpráva, plní se při načtení i realtime);
+když originál není v posledních 100 načtených zprávách, zobrazí se
+srozumitelná náhrada místo chyby.
+
+**Mini profil člena:** klik na libovolný avatar (chat, online seznam,
+příspěvky, přehled členů) zavolá `otevriMiniProfil(clenId)` v klient.js —
+modální okno s avatarem, přezdívkou, rolí a datem „členem od". Data bere
+z `posledniProfilyMapa` (naplní ji `nactiVsechnyProfily()` při každém
+volání, takže je vždy aktuální pro danou stránku). `avatarHtml(profil,
+adresa, klikatelne=true)` má nový třetí parametr — `false` se používá jen
+pro náhled vlastního avataru v editačním formuláři (klik na sebe by
+nedával smysl). `nactiVsechnyProfily()` teď vybírá i sloupec `vytvoreno`.
 
 ## Animace a skeleton loadery
 
