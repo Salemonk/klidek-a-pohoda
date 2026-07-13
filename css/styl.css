@@ -405,6 +405,56 @@ textarea { resize: vertical; min-height: 100px; }
 }
 .lfg-role-znacka { color: var(--discord); font-weight: 600; }
 
+/* ---------- Výzvy (randomizer stratagemů) ---------- */
+
+.vyzva-kategorie {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  margin-top: 8px;
+}
+.vyzva-prepinac {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: normal;
+  cursor: pointer;
+}
+.vyzva-prepinac input { width: auto; margin: 0; }
+
+.vyzva-tlacitka { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.vyzva-slot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--panel-svetly);
+  border: 1px solid var(--ohraniceni);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+}
+.vyzva-slot-emoji { font-size: 1.3rem; }
+.vyzva-slot-nazev { font-weight: 600; flex: 1; }
+.vyzva-slot-reroll {
+  font-size: 1.1rem;
+  padding: 2px 8px;
+}
+
+.vyzva-rozbalit summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--akcent);
+  list-style: none;
+}
+.vyzva-rozbalit summary::-webkit-details-marker { display: none; }
+.vyzva-rozbalit summary::before { content: "▶ "; }
+.vyzva-rozbalit[open] summary::before { content: "▼ "; }
+
+.vyzva-seznam-kategorie { margin-bottom: 14px; }
+.vyzva-seznam-kategorie h4 { font-size: 0.95rem; margin-bottom: 4px; }
+.vyzva-seznam-kategorie p { color: var(--text-tlumeny); font-size: 0.9rem; }
+
 .stitek {
   display: inline-block;
   background: rgba(245, 168, 58, 0.15);

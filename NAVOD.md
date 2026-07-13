@@ -233,3 +233,12 @@ databázi doporučujeme čas od času ručně stáhnout přes SQL Editor.
   pozvánky. Mazání starých zpráv z chatu je v souboru vypnuté (volitelné,
   viz komentář ve skriptu) — je to citlivé rozhodnutí, které má udělat
   vědomě správce.
+- `supabase/vyzvy-discord.sql`: odeslání vylosované výzvy (randomizer
+  stratagemů, stránka Výzvy) do Discordu (před spuštěním doplňte adresu
+  webhooku). Vyžaduje běžící `discord-upozorneni.sql`.
+
+**Přidání stratagemů po novém Warbondu:** otevřete `js/stratagemy-data.js`
+(obyčejný textový soubor), přidejte/odeberte položky v poli `STRATAGEMY`
+podle stejného vzoru, zvedněte `?v=` u tohoto souboru a u `js/vyzvy.js`
+ve `vyzvy.html`, nasaďte `nahrat-na-github.bat`. Žádný krok v Supabase
+není potřeba, data nejsou v databázi.

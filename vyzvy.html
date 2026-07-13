@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Výzvy | Klídek a pohoda gaming</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#12141c">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="css/styl.css?v=24">
+</head>
+<body>
+
+  <header class="hlavicka">
+    <div class="obsah hlavicka-vnitrek">
+      <a href="index.html" class="logo">🎮 Klídek <span>a pohoda</span></a>
+      <nav class="menu">
+        <a href="clenska-sekce.html">Přehled</a>
+        <a href="akce.html">Akce</a>
+        <a href="chat.html">Chat</a>
+        <a href="prispevky.html">Příspěvky</a>
+        <a href="ankety.html">Ankety</a>
+        <a href="vyzvy.html" class="aktivni">Výzvy</a>
+        <button class="tlacitko-nenapadne" onclick="odhlasit()">Odhlásit</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="clenska-stranka">
+    <div class="obsah">
+      <h1>🎲 Výzvy: randomizer stratagemů</h1>
+      <p class="poznamka" style="margin-top:-8px; margin-bottom: 20px;">
+        Vylosuj si náhodné vybavení pro extra výzvu ve hře. Vyber kategorie
+        a nech náhodu rozhodnout, nebo vylosuj rovnou celý loadout.</p>
+
+      <div class="panel-blok">
+        <h2><span class="ikona">📋</span>Nastavení losování</h2>
+
+        <p><strong>Kategorie</strong></p>
+        <div id="kategorie-seznam" class="vyzva-kategorie"></div>
+
+        <p style="margin-top:16px;"><strong>Pravidla pro loadout (4 sloty)</strong></p>
+        <label class="vyzva-prepinac">
+          <input type="checkbox" id="pravidlo-zbran" checked>
+          Aspoň jedna podpůrná zbraň
+        </label>
+        <label class="vyzva-prepinac">
+          <input type="checkbox" id="pravidlo-batoh" checked>
+          Max jedna věc na zádech (batoh nebo zbraň s batohem)
+        </label>
+
+        <div class="vyzva-tlacitka" style="margin-top:18px;">
+          <button id="tlacitko-1" class="tlacitko">🎲 Vylosuj 1 stratagem</button>
+          <button id="tlacitko-4" class="tlacitko">🎲 Vylosuj celý loadout (4)</button>
+        </div>
+        <div id="vyzva-chyba" class="chyba" style="margin-top:10px;"></div>
+      </div>
+
+      <div class="panel-blok" id="panel-vysledek" style="display:none;">
+        <h2><span class="ikona">🏆</span>Výsledek</h2>
+        <div id="vyzva-vysledek"></div>
+
+        <div class="vyzva-tlacitka" style="margin-top:16px;">
+          <button id="tlacitko-kopirovat" class="tlacitko tlacitko-male">📋 Zkopírovat</button>
+          <button id="tlacitko-discord" class="tlacitko tlacitko-male">💬 Poslat výzvu do Discordu</button>
+        </div>
+        <div id="vyzva-hlaska" class="poznamka" style="margin-top:8px;"></div>
+      </div>
+
+      <details class="panel-blok vyzva-rozbalit">
+        <summary>Výherní seznam stratagemů</summary>
+        <div id="seznam-v-nabidce" style="margin-top:16px;"></div>
+        <div id="seznam-vyrazene" style="margin-top:20px;"></div>
+      </details>
+
+    </div>
+  </main>
+
+  <script src="js/config.js?v=20"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/klient.js?v=20"></script>
+  <script src="js/stratagemy-data.js?v=5"></script>
+  <script src="js/vyzvy.js?v=22"></script>
+  <script src="js/pwa.js?v=1"></script>
+</body>
+</html>

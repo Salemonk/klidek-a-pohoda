@@ -37,10 +37,12 @@ akce.html             plánování akcí a hlasování o účasti
 ankety.html           ankety „co budeme hrát“ s hlasováním
 chat.html             společný chat (realtime)
 prispevky.html        nástěnka: příspěvky s obrázky a reakcemi
+vyzvy.html            randomizer stratagemů Helldivers 2 (viz sekce Výzvy)
 css/styl.css          jediný stylový soubor, barvy přes CSS proměnné v :root
 js/config.js          KONFIG: Supabase URL, veřejný klíč, Discord pozvánka
 js/klient.js          sdílený kód (viz níže)
 js/verejna.js         logika veřejných stránek
+js/stratagemy-data.js statická data pro randomizer stratagemů (viz sekce Výzvy)
 js/<stranka>.js       logika jednotlivých členských stránek
 assets/               favicon.svg + obrázky webu (přípona -web = zmenšené JPG)
 assets/fonts/         Nunito (woff2, hostováno lokálně kvůli GDPR, ne Google Fonts)
@@ -110,6 +112,7 @@ Základ vytváří `supabase/schema.sql`, rozšíření mají vlastní skripty.
 | `webhooky`  | adresy Discord webhooků | **tajná**: RLS bez policies, čte ji jen SECURITY DEFINER funkce |
 | `pozvanky`  | jednorázové registrační kódy (platnost 7 dní) | vidí/spravuje jen admin; RPC `over_pozvanku(kod)` smí volat i `anon` a vrací jen ano/ne |
 | `profily.posledni_lfg` | čas posledního použití tlačítka „Hledám hráče“ | slouží jen k 15minutovému cooldownu proti spamu; skript `hledam-hrace.sql` |
+| `profily.posledni_vyzva` | čas posledního odeslání výzvy z randomizeru stratagemů | 5minutový cooldown proti spamu; skript `vyzvy-discord.sql` |
 
 Zabezpečení (RLS):
 
@@ -253,6 +256,37 @@ textu (závorka s obsahem pole, jen když není prázdné) je zrcadlená
 1:1 s tím, co dělá SQL funkce. Textové pole `#lfg-text` je vložené
 přímo do věty šablony (`.lfg-sablona`), aby člen viděl, kam přesně
 jeho text v Discord zprávě zapadne.
+
+## Výzvy: randomizer stratagemů (Helldivers 2)
+
+Stránka `vyzvy.html` + `js/vyzvy.js`. Data jsou **statická** (žádná DB
+tabulka): `js/stratagemy-data.js` obsahuje `KATEGORIE_STRATAGEMU` (8 kategorií
+výbavy — podpůrné zbraně jsou rozdělené na `zbran` a `zbran_batoh` podle toho,
+jestli zbraň zabírá slot na zádech) a `STRATAGEMY` (~90 položek, jen výbavové
+stratagemy, které si hráč vybírá do loadoutu; misijní stratagemy jako Resupply
+nebo Reinforce se do výbavy nevybírají, proto v datech chybí). Zdroj:
+helldivers.wiki.gg, čistě Helldivers 2 (ne HD1).
+
+Losovací logika (čistý JS bez závislostí, v `vyzvy.js`):
+- **1 stratagem**: náhodný výběr z položek ve zaškrtnutých kategoriích.
+- **Loadout (4 sloty)**: respektuje dvě volitelná pravidla — „aspoň jedna
+  podpůrná zbraň“ (`jeZbran()`: kategorie `zbran` nebo `zbran_batoh`) a „max
+  jedna věc na zádech“ (`zabiraMistoNaZadech()`: kategorie `batoh` nebo
+  `zbran_batoh`, např. GR-8 Recoilless Rifle). Nesplnitelná kombinace
+  kategorií/pravidel vrátí srozumitelnou chybovou hlášku místo loadoutu.
+- **Reroll slotu** (↻): přelosuje jen jeden slot, bere ohled na zbylé 3 sloty
+  (nezavede duplicitu, dodrží obě pravidla).
+
+Sdílení: „Zkopírovat“ (schránka) a „Poslat výzvu do Discordu“ (RPC
+`posli_vyzvu(text_vyzvy)`, skript `vyzvy-discord.sql`, stejný vzor jako LFG:
+webhook `vyzvy` v tabulce `webhooky`, cooldown `profily.posledni_vyzva`).
+Text sestavuje web, funkce jen ohlídá cooldown/délku a doručení.
+
+**Aktualizace po novém Warbondu:** upravit `js/stratagemy-data.js` (přidat/
+odebrat položky, novou podpůrnou zbraň zařadit do `zbran` nebo `zbran_batoh`
+podle toho, jestli zabírá záda), zvednout `?v=` u tohoto souboru i u
+`vyzvy.js`, nasadit batem. Žádný zásah do databáze
+není potřeba.
 
 ## Provoz a údržba
 
