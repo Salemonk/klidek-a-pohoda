@@ -68,9 +68,12 @@ pokud má návštěvník v localStorage uložený přihlašovací token
 - `esc(text)` escapuje HTML. **Každý uživatelský obsah vkládaný do
   `innerHTML` musí projít přes `esc()` nebo `formatujText()`**, to je jediná
   ochrana proti XSS.
-- `formatujText(text)` bezpečný mini-markdown: `**tučně**`, `*kurzíva*`,
-  řádek začínající `- ` tvoří odrážku, http(s) odkazy → klikací. Nejdřív
-  escapuje, pak formátuje a linkuje.
+- `formatujRadek(text)` řádkové formátování: `**tučně**`, `*kurzíva*`,
+  http(s) odkazy → klikací, bez blokového obalení. Použití tam, kde nechceme
+  `<p>`/`<ul>` (nadpis ankety v `anketa-otazka`).
+- `formatujText(text)` bezpečný mini-markdown pro víceřádkový text: staví na
+  `formatujRadek`, navíc řádek začínající `- ` tvoří odrážku a řádky obaluje
+  do `<p>`. Nejdřív escapuje, pak formátuje a linkuje.
 - `linkujOdkazy(escapovanyText)` z http(s) URL v už escapovaném textu udělá
   `<a target=_blank rel=noopener>`. Pracuje VÝHRADNĚ na výstupu z esc()
   (bezpečné proti XSS), povoluje jen http/https (ne javascript:). Používá
@@ -107,7 +110,8 @@ Základ vytváří `supabase/schema.sql`, rozšíření mají vlastní skripty.
 | `zpravy`    | chat | realtime publikace `supabase_realtime`; kanál „chat“ v chat.js kombinuje postgres_changes (nové/smazané zprávy) a Presence (online členové: klíč = id člena, `track()` po připojení, event `sync` překresluje řádek nad chatem; bez tabulky a SQL) |
 | `prispevky` | nadpis, text, `obrazek` (cesta v bucketu) | |
 | `reakce`    | emoji reakce na příspěvky | PK (příspěvek, člen, emoji) |
-| `ankety` + `ankety_moznosti` + `ankety_hlasy` | ankety s hlasováním | zakládá každý člen, hlasují všichni (1 hlas/anketa, PK anketa+člen), maže/uzavírá autor nebo vedení; skript `ankety.sql` |
+| `komentare` | komentáře k příspěvkům (text + emoji, bez obrázků) | PK (příspěvek, člen) = **jeden komentář na člena**, vynuceno databází; autor upraví/smaže svůj, vedení maže cizí; skript `komentare.sql` |
+| `ankety` + `ankety_moznosti` + `ankety_hlasy` | ankety s hlasováním | zakládá každý člen, hlasují všichni (1 hlas/anketa, PK anketa+člen), maže/uzavírá autor nebo vedení; skript `ankety.sql`. Otázka podporuje řádkové formátování (`formatujRadek`: tučně, kurzíva, odkazy), možnosti jsou čistý text |
 | `zpravy.odpoved_na` | odpověď na zprávu v chatu (citace) | FK na `zpravy.id`, `on delete set null`; skript `odpovedi-chat.sql`. Žádná nová RLS pravidla (existující pravidla platí na celý řádek) |
 | `webhooky`  | adresy Discord webhooků | **tajná**: RLS bez policies, čte ji jen SECURITY DEFINER funkce |
 | `pozvanky`  | jednorázové registrační kódy (platnost 7 dní) | vidí/spravuje jen admin; RPC `over_pozvanku(kod)` smí volat i `anon` a vrací jen ano/ne |
@@ -155,15 +159,19 @@ odeslání; editace akce s novým datem je v akce.js vynuluje (re-remind).
 
 ## Quality of life (chat a profily)
 
-**Nepřečtené zprávy v chatu:** `zkontrolujNeprectenyChat()` v klient.js se
-volá tiše (fire-and-forget, bez čekání) z `vyzadujPrihlaseni()` na každé
-členské stránce. Porovnává localStorage klíč `kap-posledni-precteny-chat`
-s počtem zpráv novějších než tento čas a promítne značku (`.pocitadlo-znacka`,
-strop „9+") u odkazu „Chat" v menu — dynamicky přes JS, žádné úpravy HTML
-navigace nebyly potřeba. Chat.js volá `oznacChatPrecteny(casIso)` při
-otevření chatu i při každé nové realtime zprávě, dokud je stránka otevřená.
-Při úplně první návštěvě (žádný záznam v localStorage) se historie
-nepočítá jako nepřečtená, jen se nastaví „teď".
+**Nepřečtený obsah (značky v menu):** `zkontrolujNeprectene(uzivatelId)`
+v klient.js se volá tiše (fire-and-forget, bez čekání) z `vyzadujPrihlaseni()`
+na každé členské stránce. Sledované sekce definuje `SLEDOVANE_SEKCE` (chat →
+zpravy; akce → akce; příspěvky → prispevky + komentare; ankety → ankety).
+Pro každou sekci se porovná localStorage klíč `kap-posledni-precteny-<sekce>`
+s počtem řádků novějších než tento čas (head-count dotaz, `.neq` vynechá
+vlastní tvorbu člena) a součet se promítne jako značka (`.pocitadlo-znacka`,
+strop „9+") u odkazu v menu — dynamicky přes JS, žádné úpravy HTML navigace.
+Sekce s odkazem `.aktivni` (právě otevřená stránka) se přeskočí. Stránky
+prispevky/ankety/akce volají `oznacSekciPrectenou("<sekce>")` při načtení;
+chat dál používá wrapper `oznacChatPrecteny(casIso)` při otevření i při každé
+realtime zprávě. Při úplně první návštěvě (žádný záznam v localStorage) se
+historie nepočítá jako nepřečtená, jen se nastaví „teď".
 
 **Odpovědi na zprávu (citace):** sloupec `zpravy.odpoved_na` (skript
 `odpovedi-chat.sql`). Tlačítko ↩ u zprávy zavolá `pripravOdpoved(id)`,
@@ -256,6 +264,21 @@ textu (závorka s obsahem pole, jen když není prázdné) je zrcadlená
 1:1 s tím, co dělá SQL funkce. Textové pole `#lfg-text` je vložené
 přímo do věty šablony (`.lfg-sablona`), aby člen viděl, kam přesně
 jeho text v Discord zprávě zapadne.
+
+## Komentáře k příspěvkům
+
+Tabulka `komentare` (skript `komentare.sql`), pravidlo **jeden komentář na
+člena a příspěvek** vynucuje složený primární klíč (prispevek_id, clen_id),
+web ho jen zrcadlí (formulář se nezobrazí, když už člen komentář má). Obsah
+text + emoji (max 500 znaků, žádné obrázky). Podporuje stejné základní
+formátování jako příspěvky (`formatujText()`: **tučně**, *kurzíva*, klikací
+odkazy). Autor svůj komentář upraví (sloupec `upraveno`)
+nebo smaže, vedení/admin maže i cizí (RLS s `je_vedeni()`).
+
+V `prispevky.js` se komentáře načítají vnořeným selectem u příspěvků (jako
+reakce) a vykreslují ve `komentareHtml()` pod řádkem reakcí. Smajlíky vkládá
+sdílený plovoucí panel `#panel-emoji-komentar` (`otevriPanelKomentare()`,
+vložení na pozici kurzoru).
 
 ## Výzvy: randomizer stratagemů (Helldivers 2)
 

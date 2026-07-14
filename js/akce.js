@@ -17,6 +17,7 @@ async function spustStranku() {
   const session = await vyzadujPrihlaseni();
   if (!session) return;
 
+  oznacSekciPrectenou("akce");
   mojeId = session.user.id;
   mujProfil = await nactiMujProfil(mojeId);
   profily = await nactiVsechnyProfily();

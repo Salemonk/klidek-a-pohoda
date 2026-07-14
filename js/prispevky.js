@@ -8,6 +8,7 @@ let profily = {};
 let obrazkyPodleId = {}; // id příspěvku → cesta k obrázku v úložišti
 let avatary = {};        // id člena → adresa avataru
 let reakcePodleId = {};  // id příspěvku → pole reakcí {clen_id, emoji}
+let komentarePodleId = {}; // id příspěvku → pole komentářů {clen_id, text, …}
 let nactenePrispevky = []; // naposledy načtené příspěvky (pro úpravy)
 
 const ULOZISTE = "prispevky-obrazky";
@@ -16,6 +17,7 @@ async function spustStranku() {
   const session = await vyzadujPrihlaseni();
   if (!session) return;
 
+  oznacSekciPrectenou("prispevky");
   mojeId = session.user.id;
   mujProfil = await nactiMujProfil(mojeId);
   profily = await nactiVsechnyProfily();
@@ -105,7 +107,7 @@ async function nactiPrispevky() {
   // O jeden navíc, abychom poznali, jestli existují ještě starší příspěvky
   const { data, error } = await sb
     .from("prispevky")
-    .select("id, autor, nadpis, text, obrazek, vytvoreno, upraveno, reakce(clen_id, emoji)")
+    .select("id, autor, nadpis, text, obrazek, vytvoreno, upraveno, reakce(clen_id, emoji), komentare(clen_id, text, vytvoreno, upraveno)")
     .order("vytvoreno", { ascending: false })
     .limit(zobrazenoPrispevku + 1);
 
@@ -131,6 +133,7 @@ async function nactiPrispevky() {
   const adresyObrazku = await ziskejPodepsaneAdresy(ULOZISTE, cesty);
 
   reakcePodleId = {};
+  komentarePodleId = {};
   nactenePrispevky = prispevkyKZobrazeni;
   prvek.innerHTML = prispevkyKZobrazeni.map((prispevek) => {
     const profil = profily[prispevek.autor];
@@ -139,6 +142,7 @@ async function nactiPrispevky() {
     if (prispevek.obrazek) obrazkyPodleId[prispevek.id] = prispevek.obrazek;
     const adresa = prispevek.obrazek ? adresyObrazku[prispevek.obrazek] : null;
     reakcePodleId[prispevek.id] = prispevek.reakce || [];
+    komentarePodleId[prispevek.id] = prispevek.komentare || [];
 
     return `
       <article class="prispevek" id="prispevek-${prispevek.id}">
@@ -154,6 +158,7 @@ async function nactiPrispevky() {
         ${adresa ? `<a href="${adresa}" target="_blank" title="Otevřít v plné velikosti">
           <img class="prispevek-obrazek" src="${adresa}" alt="Obrázek k příspěvku" loading="lazy"></a>` : ""}
         ${reakceHtml(prispevek)}
+        ${komentareHtml(prispevek)}
       </article>`;
   }).join("")
   + (jsouStarsi
@@ -282,6 +287,156 @@ async function prepniReakci(prispevekId, emoji) {
     return;
   }
   await nactiPrispevky();
+}
+
+// ---------- Komentáře ----------
+// Každý člen může k příspěvku napsat jeden komentář (vynucuje to složený
+// primární klíč v databázi), svůj komentář může upravit nebo smazat.
+// Cizí komentáře smí mazat vedení (moderace).
+
+function komentareHtml(prispevek) {
+  const komentare = (prispevek.komentare || [])
+    .slice()
+    .sort((a, b) => new Date(a.vytvoreno) - new Date(b.vytvoreno));
+
+  const mamKomentar = komentare.some((k) => k.clen_id === mojeId);
+
+  const radky = komentare.map((koment) => {
+    const profil = profily[koment.clen_id];
+    const jeMuj = koment.clen_id === mojeId;
+    const smiSmazat = jeMuj || jeVedeni(mujProfil);
+    return `
+      <div class="komentar" id="komentar-${prispevek.id}-${koment.clen_id}">
+        ${avatarHtml(profil, avatary[koment.clen_id])}
+        <div class="komentar-obsah">
+          <div class="komentar-meta">
+            <strong>${profil ? esc(profil.prezdivka) : "?"}</strong>
+            · ${formatujCasChatu(koment.vytvoreno)}
+            ${koment.upraveno ? " · upraveno" : ""}
+            ${jeMuj ? `· <button class="zprava-smazat" onclick="zacniUpravuKomentare(${prispevek.id})">upravit</button>` : ""}
+            ${smiSmazat ? `· <button class="zprava-smazat" onclick="smazKomentar(${prispevek.id}, '${koment.clen_id}')">smazat</button>` : ""}
+          </div>
+          <div class="komentar-text">${formatujText(koment.text)}</div>
+        </div>
+      </div>`;
+  }).join("");
+
+  // Formulář jen pro toho, kdo ještě komentář nemá
+  const formular = mamKomentar ? "" : `
+    <form class="komentar-formular" onsubmit="pridejKomentar(event, ${prispevek.id})">
+      <button type="button" class="emoji-tlacitko" title="Smajlíky"
+        onclick="otevriPanelKomentare('koment-text-${prispevek.id}', this)">😊</button>
+      <input type="text" id="koment-text-${prispevek.id}" maxlength="500"
+        placeholder="Napiš komentář…" autocomplete="off" required>
+      <button type="submit" class="tlacitko tlacitko-male">Přidat komentář</button>
+      <p class="napoveda-formatovani">Formátování: <strong>**tučně**</strong>, <em>*kurzíva*</em>.</p>
+    </form>`;
+
+  return `<div class="komentare-blok">${radky}${formular}</div>`;
+}
+
+async function pridejKomentar(udalost, prispevekId) {
+  udalost.preventDefault();
+  const pole = document.getElementById("koment-text-" + prispevekId);
+  const text = pole.value.trim();
+  if (!text) return;
+
+  const { error } = await sb.from("komentare").insert({
+    prispevek_id: prispevekId,
+    clen_id: mojeId,
+    text: text,
+  });
+
+  if (error) {
+    alert("Komentář se nepodařilo uložit: " + error.message);
+    return;
+  }
+  await nactiPrispevky();
+}
+
+function zacniUpravuKomentare(prispevekId) {
+  const koment = (komentarePodleId[prispevekId] || []).find((k) => k.clen_id === mojeId);
+  if (!koment) return;
+
+  const radek = document.getElementById(`komentar-${prispevekId}-${mojeId}`);
+  radek.innerHTML = `
+    <form class="komentar-formular" onsubmit="ulozUpravuKomentare(event, ${prispevekId})">
+      <button type="button" class="emoji-tlacitko" title="Smajlíky"
+        onclick="otevriPanelKomentare('koment-uprava-${prispevekId}', this)">😊</button>
+      <input type="text" id="koment-uprava-${prispevekId}" maxlength="500"
+        autocomplete="off" required value="${esc(koment.text)}">
+      <button type="submit" class="tlacitko tlacitko-male">Uložit</button>
+      <button type="button" class="tlacitko-nenapadne" onclick="nactiPrispevky()">Zrušit</button>
+      <p class="napoveda-formatovani">Formátování: <strong>**tučně**</strong>, <em>*kurzíva*</em>.</p>
+    </form>`;
+  document.getElementById("koment-uprava-" + prispevekId).focus();
+}
+
+async function ulozUpravuKomentare(udalost, prispevekId) {
+  udalost.preventDefault();
+  const text = document.getElementById("koment-uprava-" + prispevekId).value.trim();
+  if (!text) return;
+
+  const { error } = await sb.from("komentare")
+    .update({ text: text, upraveno: new Date().toISOString() })
+    .eq("prispevek_id", prispevekId)
+    .eq("clen_id", mojeId);
+
+  if (error) {
+    alert("Úpravu se nepodařilo uložit: " + error.message);
+    return;
+  }
+  await nactiPrispevky();
+}
+
+async function smazKomentar(prispevekId, clenId) {
+  if (!confirm("Opravdu smazat tento komentář?")) return;
+
+  const { error } = await sb.from("komentare").delete()
+    .eq("prispevek_id", prispevekId)
+    .eq("clen_id", clenId);
+
+  if (error) {
+    alert("Smazání se nepodařilo: " + error.message);
+    return;
+  }
+  await nactiPrispevky();
+}
+
+// Plovoucí panel se smajlíky pro formulář komentáře: jeden sdílený,
+// přesouvá se k aktivnímu formuláři a vkládá na pozici kurzoru
+function otevriPanelKomentare(inputId, tlacitko) {
+  let panel = document.getElementById("panel-emoji-komentar");
+  if (!panel) {
+    panel = document.createElement("div");
+    panel.id = "panel-emoji-komentar";
+    panel.className = "emoji-panel";
+    panel.innerHTML = ZAKLADNI_EMOJI
+      .map((e) => `<button type="button" class="emoji-volba">${e}</button>`)
+      .join("");
+    panel.addEventListener("click", (udalost) => {
+      const volba = udalost.target.closest(".emoji-volba");
+      if (!volba) return;
+      const pole = document.getElementById(panel.dataset.input);
+      if (!pole) return;
+      const zacatek = pole.selectionStart ?? pole.value.length;
+      const konec = pole.selectionEnd ?? pole.value.length;
+      pole.value = pole.value.slice(0, zacatek) + volba.textContent + pole.value.slice(konec);
+      const novaPozice = zacatek + volba.textContent.length;
+      pole.focus();
+      pole.setSelectionRange(novaPozice, novaPozice);
+    });
+  }
+
+  const formular = tlacitko.closest(".komentar-formular");
+  const uzOtevreny = !panel.hidden && panel.nextElementSibling === formular;
+  if (uzOtevreny) {
+    panel.hidden = true;
+    return;
+  }
+  panel.dataset.input = inputId;
+  formular.insertAdjacentElement("beforebegin", panel);
+  panel.hidden = false;
 }
 
 // ---------- Smazání příspěvku ----------

@@ -880,6 +880,48 @@ select.volba-role {
 
 #panel-reakci { margin-top: 8px; margin-bottom: 4px; }
 
+/* ---------- Komentáře pod příspěvky ---------- */
+
+.komentare-blok {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ohraniceni);
+}
+
+.komentar {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.komentar .avatar { margin-top: 2px; }
+.komentar-obsah { flex: 1; min-width: 0; }
+.komentar-meta {
+  color: var(--text-tlumeny);
+  font-size: 0.85rem;
+}
+.komentar-text {
+  overflow-wrap: break-word;
+}
+.komentar-text p { margin: 0; }
+.komentar-text ul { margin: 4px 0 4px 22px; }
+
+.komentar-formular {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.komentar-formular input {
+  flex: 1;
+  min-width: 160px;
+  margin-bottom: 0;
+}
+.komentar-formular .napoveda-formatovani { flex-basis: 100%; margin: 0; }
+
+#panel-emoji-komentar { margin: 8px 0; }
+
 /* ---------- Informační bannery (Nástěnkářka, nástěnka akcí) ---------- */
 
 .nastenkarka,

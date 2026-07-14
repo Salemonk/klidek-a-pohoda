@@ -44,9 +44,9 @@ async function vyzadujPrihlaseni() {
     window.location.href = "prihlaseni.html";
     return null;
   }
-  // Na pozadí (bez čekání) zkontrolujeme nepřečtené zprávy v chatu
-  // a promítneme je jako značku u odkazu "Chat" v menu.
-  zkontrolujNeprectenyChat();
+  // Na pozadí (bez čekání) zkontrolujeme nepřečtený obsah (chat, příspěvky,
+  // ankety, akce) a promítneme ho jako značky u odkazů v menu.
+  zkontrolujNeprectene(session.user.id);
   return session;
 }
 
@@ -332,41 +332,67 @@ function zavriMiniProfil() {
   if (podklad) podklad.hidden = true;
 }
 
-// ---------- Nepřečtené zprávy v chatu (značka u odkazu "Chat") ----------
+// ---------- Nepřečtený obsah (značky s počty u odkazů v menu) ----------
+//
+// Pro každou sledovanou sekci si prohlížeč pamatuje, dokdy ji má člen
+// "přečtenou" (localStorage). Při načtení stránky se na pozadí spočítá,
+// kolik nového obsahu od té doby přibylo (bez vlastní tvorby člena),
+// a ukáže se jako oranžová značka u odkazu v menu. Návštěvou stránky
+// se sekce označí za přečtenou.
 
-const KLIC_POSLEDNI_CHAT = "kap-posledni-precteny-chat";
+const SLEDOVANE_SEKCE = {
+  chat:      { href: "chat.html",      dotazy: [{ tabulka: "zpravy",    autor: "autor" }] },
+  akce:      { href: "akce.html",      dotazy: [{ tabulka: "akce",      autor: "autor" }] },
+  prispevky: { href: "prispevky.html", dotazy: [{ tabulka: "prispevky", autor: "autor" },
+                                                { tabulka: "komentare", autor: "clen_id" }] },
+  ankety:    { href: "ankety.html",    dotazy: [{ tabulka: "ankety",    autor: "autor" }] },
+};
 
-// Uloží, dokdy má člen chat přečtený (voláno z chat.js při otevření
-// a při každé nové zprávě, dokud je chat otevřený)
-function oznacChatPrecteny(casIso) {
+// Uloží, dokdy má člen sekci přečtenou (klíč chatu zůstává stejný jako
+// dřív, takže se členům stav chatu zachová)
+function oznacSekciPrectenou(sekce, casIso) {
   try {
-    localStorage.setItem(KLIC_POSLEDNI_CHAT, casIso || new Date().toISOString());
+    localStorage.setItem("kap-posledni-precteny-" + sekce, casIso || new Date().toISOString());
   } catch (e) { /* nedostupné úložiště (soukromé okno apod.) nevadí */ }
 }
 
-// Zjistí počet nepřečtených zpráv a promítne ho jako značku u "Chat" v menu
-async function zkontrolujNeprectenyChat() {
-  const odkaz = document.querySelector('a[href="chat.html"]');
-  if (!odkaz) return;
-
-  let posledni;
-  try { posledni = localStorage.getItem(KLIC_POSLEDNI_CHAT); } catch (e) { return; }
-
-  if (!posledni) {
-    // Poprvé s touto funkcí — historii nezobrazujeme jako nepřečtenou,
-    // počítáme až od teď
-    oznacChatPrecteny();
-    return;
-  }
-
-  const { count } = await sb.from("zpravy")
-    .select("id", { count: "exact", head: true })
-    .gt("vytvoreno", posledni);
-
-  nastavZnackuChatu(odkaz, count || 0);
+// Zpětně kompatibilní wrapper pro chat.js (značí přečtené podle
+// poslední zprávy při otevření chatu a při každé realtime zprávě)
+function oznacChatPrecteny(casIso) {
+  oznacSekciPrectenou("chat", casIso);
 }
 
-function nastavZnackuChatu(odkaz, pocet) {
+// Zjistí počty nepřečteného ve všech sekcích a promítne je do menu.
+// Vlastní tvorba člena (uzivatelId) se nepočítá; sekce, na které člen
+// právě je (odkaz .aktivni), se přeskočí.
+async function zkontrolujNeprectene(uzivatelId) {
+  for (const [sekce, info] of Object.entries(SLEDOVANE_SEKCE)) {
+    const odkaz = document.querySelector(`a[href="${info.href}"]`);
+    if (!odkaz || odkaz.classList.contains("aktivni")) continue;
+
+    let posledni;
+    try { posledni = localStorage.getItem("kap-posledni-precteny-" + sekce); } catch (e) { return; }
+
+    if (!posledni) {
+      // Poprvé s touto funkcí — historii nezobrazujeme jako nepřečtenou,
+      // počítáme až od teď
+      oznacSekciPrectenou(sekce);
+      continue;
+    }
+
+    let celkem = 0;
+    for (const dotaz of info.dotazy) {
+      const { count } = await sb.from(dotaz.tabulka)
+        .select(dotaz.autor, { count: "exact", head: true })
+        .gt("vytvoreno", posledni)
+        .neq(dotaz.autor, uzivatelId);
+      celkem += count || 0;
+    }
+    nastavZnacku(odkaz, celkem);
+  }
+}
+
+function nastavZnacku(odkaz, pocet) {
   let znacka = odkaz.querySelector(".pocitadlo-znacka");
   if (pocet > 0) {
     if (!znacka) {
@@ -445,22 +471,29 @@ function linkujOdkazy(escapovanyText) {
   });
 }
 
-// Převede text se základním formátováním na HTML:
+// Řádkové formátování jednoho řádku (bezpečné, pracuje na výstupu esc()):
 //   **tučně**  →  tučné písmo
 //   *kurzíva*  →  kurzíva
-//   řádek začínající "- "  →  odrážka
 //   odkaz http(s)://…      →  klikací odkaz
+// Vhodné tam, kde nechceme blokové obalení do <p>/<ul> (např. nadpis ankety).
+function formatujRadek(text) {
+  return linkujOdkazy(
+    esc(text)
+      .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+  );
+}
+
+// Převede víceřádkový text se základním formátováním na HTML:
+//   **tučně**, *kurzíva*, odkaz http(s)://… (viz formatujRadek)
+//   řádek začínající "- "  →  odrážka
 function formatujText(text) {
   const radky = String(text).split("\n");
   let html = "";
   let vSeznamu = false;
 
   for (const radek of radky) {
-    const formatovany = linkujOdkazy(
-      esc(radek)
-        .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
-        .replace(/\*([^*]+)\*/g, "<em>$1</em>")
-    );
+    const formatovany = formatujRadek(radek);
 
     if (radek.startsWith("- ")) {
       if (!vSeznamu) { html += "<ul>"; vSeznamu = true; }

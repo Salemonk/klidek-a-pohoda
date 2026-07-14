@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#12141c">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="stylesheet" href="css/styl.css?v=26">
+  <link rel="stylesheet" href="css/styl.css?v=28">
 </head>
 <body>
 
@@ -38,6 +38,8 @@
           <label for="otazka">Otázka</label>
           <input type="text" id="otazka" maxlength="200" required
                  placeholder="Např. Co budeme hrát v pátek?">
+          <p class="napoveda-formatovani">Formátování: <strong>**tučně**</strong>,
+          <em>*kurzíva*</em>, odkazy se zaktivní samy.</p>
 
           <label>Možnosti</label>
           <div id="moznosti-pole">
@@ -60,8 +62,8 @@
 
   <script src="js/config.js?v=20"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/klient.js?v=20"></script>
-  <script src="js/ankety.js?v=20"></script>
+  <script src="js/klient.js?v=22"></script>
+  <script src="js/ankety.js?v=23"></script>
   <script src="js/pwa.js?v=1"></script>
 </body>
 </html>

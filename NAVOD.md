@@ -236,6 +236,8 @@ databázi doporučujeme čas od času ručně stáhnout přes SQL Editor.
 - `supabase/vyzvy-discord.sql`: odeslání vylosované výzvy (randomizer
   stratagemů, stránka Výzvy) do Discordu (před spuštěním doplňte adresu
   webhooku). Vyžaduje běžící `discord-upozorneni.sql`.
+- `supabase/komentare.sql`: komentáře k příspěvkům na nástěnce (jeden
+  komentář na člena a příspěvek). Vyžaduje běžící `role-vedeni-a-upravy.sql`.
 
 **Přidání stratagemů po novém Warbondu:** otevřete `js/stratagemy-data.js`
 (obyčejný textový soubor), přidejte/odeberte položky v poli `STRATAGEMY`

@@ -10,6 +10,7 @@ async function spustStranku() {
   const session = await vyzadujPrihlaseni();
   if (!session) return;
 
+  oznacSekciPrectenou("ankety");
   mojeId = session.user.id;
   mujProfil = await nactiMujProfil(mojeId);
   profily = await nactiVsechnyProfily();
@@ -145,7 +146,7 @@ function vykresliAnketu(anketa, vsechnyHlasy) {
 
   return `
     <div class="panel-blok anketa" id="anketa-${anketa.id}">
-      <h3 class="anketa-otazka">${esc(anketa.otazka)}
+      <h3 class="anketa-otazka">${formatujRadek(anketa.otazka)}
         ${anketa.uzavrena ? '<span class="stitek">uzavřeno</span>' : ""}</h3>
       <div class="anketa-moznosti">${moznostiHtml}</div>
       <div class="akce-meta">
