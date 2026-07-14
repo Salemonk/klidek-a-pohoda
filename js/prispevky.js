@@ -35,6 +35,37 @@ function pripravFormular() {
   const formular = document.getElementById("formular-prispevek");
   const chyba = document.getElementById("chyba-prispevek");
   const tlacitko = document.getElementById("tlacitko-zverejnit");
+  const poleObrazku = document.getElementById("obrazek-prispevku");
+  const infoObrazku = document.getElementById("info-obrazku");
+
+  function aktualizujInfoObrazku() {
+    const soubor = poleObrazku.files[0];
+    infoObrazku.textContent = soubor ? `📎 Přiložen obrázek: ${esc(soubor.name)}` : "";
+  }
+  poleObrazku.addEventListener("change", aktualizujInfoObrazku);
+
+  // Vložení screenshotu ze schránky (Ctrl+V) přímo do textu příspěvku:
+  // najde v vložených datech obrázek a naplní jím stejné pole pro soubor,
+  // které se používá i při výběru přes tlačítko (DataTransfer simuluje
+  // výběr souboru, zbytek nahrávání se pak řeší úplně stejně)
+  document.getElementById("text-prispevku").addEventListener("paste", (udalost) => {
+    const polozky = udalost.clipboardData && udalost.clipboardData.items;
+    if (!polozky) return;
+
+    for (const polozka of polozky) {
+      if (!polozka.type.startsWith("image/")) continue;
+      const soubor = polozka.getAsFile();
+      if (!soubor) continue;
+
+      const prenos = new DataTransfer();
+      prenos.items.add(soubor);
+      poleObrazku.files = prenos.files;
+      aktualizujInfoObrazku();
+      zobrazToast("Screenshot vložen, přiloží se k příspěvku. 📸", "uspech");
+      udalost.preventDefault();
+      break;
+    }
+  });
 
   formular.addEventListener("submit", async (udalost) => {
     udalost.preventDefault();
@@ -89,6 +120,7 @@ function pripravFormular() {
       return;
     }
     formular.reset();
+    infoObrazku.textContent = "";
     await nactiPrispevky();
   });
 }
@@ -107,7 +139,8 @@ async function nactiPrispevky() {
   // O jeden navíc, abychom poznali, jestli existují ještě starší příspěvky
   const { data, error } = await sb
     .from("prispevky")
-    .select("id, autor, nadpis, text, obrazek, vytvoreno, upraveno, reakce(clen_id, emoji), komentare(clen_id, text, vytvoreno, upraveno)")
+    .select("id, autor, nadpis, text, obrazek, pripnuto, vytvoreno, upraveno, reakce(clen_id, emoji), komentare(clen_id, text, vytvoreno, upraveno)")
+    .order("pripnuto", { ascending: false })
     .order("vytvoreno", { ascending: false })
     .limit(zobrazenoPrispevku + 1);
 
@@ -144,14 +177,17 @@ async function nactiPrispevky() {
     reakcePodleId[prispevek.id] = prispevek.reakce || [];
     komentarePodleId[prispevek.id] = prispevek.komentare || [];
 
+    const smiPripnout = jeVedeni(mujProfil);
+
     return `
-      <article class="prispevek" id="prispevek-${prispevek.id}">
-        <h3>${esc(prispevek.nadpis)}</h3>
+      <article class="prispevek ${prispevek.pripnuto ? "pripnuto" : ""}" id="prispevek-${prispevek.id}">
+        <h3>${prispevek.pripnuto ? '<span class="stitek" title="Připnutý příspěvek">📌 připnuto</span> ' : ""}${esc(prispevek.nadpis)}</h3>
         <div class="prispevek-meta">
           ${avatarHtml(profil, avatary[prispevek.autor])}
           ${profil ? esc(profil.prezdivka) : "?"} · ${formatujDatum(prispevek.vytvoreno)}
           ${prispevek.upraveno ? " · upraveno" : ""}
           ${jeMuj ? `· <button class="zprava-smazat" onclick="zacniUpravuPrispevku(${prispevek.id})">upravit</button>` : ""}
+          ${smiPripnout ? `· <button class="zprava-smazat" onclick="prepniPripnuti(${prispevek.id}, ${prispevek.pripnuto})">${prispevek.pripnuto ? "odepnout" : "připnout"}</button>` : ""}
           ${smiSmazat ? `· <button class="zprava-smazat" onclick="smazPrispevek(${prispevek.id})">smazat</button>` : ""}
         </div>
         <div class="prispevek-text">${formatujText(prispevek.text)}</div>
@@ -205,7 +241,7 @@ async function ulozUpravuPrispevku(udalost, prispevekId) {
     .eq("id", prispevekId);
 
   if (error) {
-    alert("Úpravu se nepodařilo uložit: " + error.message);
+    zobrazToast("Úpravu se nepodařilo uložit: " + error.message);
     return;
   }
   await nactiPrispevky();
@@ -234,32 +270,13 @@ function reakceHtml(prispevek) {
 }
 
 // Otevře (nebo schová) panel se smajlíky pod daným příspěvkem
+// (sdílený plovoucí panel z klient.js)
 function otevriPanelReakci(prispevekId, tlacitko) {
-  let panel = document.getElementById("panel-reakci");
-  if (!panel) {
-    panel = document.createElement("div");
-    panel.id = "panel-reakci";
-    panel.className = "emoji-panel";
-    panel.innerHTML = ZAKLADNI_EMOJI
-      .map((e) => `<button type="button" class="emoji-volba">${e}</button>`)
-      .join("");
-    panel.addEventListener("click", async (udalost) => {
-      const volba = udalost.target.closest(".emoji-volba");
-      if (!volba) return;
-      panel.hidden = true;
-      await prepniReakci(panel.dataset.prispevek, volba.textContent);
-    });
-  }
-
   const radek = tlacitko.closest(".reakce-radek");
-  const uzOtevreny = !panel.hidden && panel.previousElementSibling === radek;
-  if (uzOtevreny) {
-    panel.hidden = true;
-    return;
-  }
-  panel.dataset.prispevek = prispevekId;
-  radek.insertAdjacentElement("afterend", panel);
-  panel.hidden = false;
+  otevriPlovouciEmojiPanel("panel-reakci", radek, async (emoji) => {
+    document.getElementById("panel-reakci").hidden = true;
+    await prepniReakci(prispevekId, emoji);
+  });
 }
 
 // Přidá, nebo odebere moji reakci daným smajlíkem
@@ -283,7 +300,7 @@ async function prepniReakci(prispevekId, emoji) {
   }
 
   if (vysledek.error) {
-    alert("Reakci se nepodařilo uložit: " + vysledek.error.message);
+    zobrazToast("Reakci se nepodařilo uložit: " + vysledek.error.message);
     return;
   }
   await nactiPrispevky();
@@ -348,7 +365,7 @@ async function pridejKomentar(udalost, prispevekId) {
   });
 
   if (error) {
-    alert("Komentář se nepodařilo uložit: " + error.message);
+    zobrazToast("Komentář se nepodařilo uložit: " + error.message);
     return;
   }
   await nactiPrispevky();
@@ -383,7 +400,7 @@ async function ulozUpravuKomentare(udalost, prispevekId) {
     .eq("clen_id", mojeId);
 
   if (error) {
-    alert("Úpravu se nepodařilo uložit: " + error.message);
+    zobrazToast("Úpravu se nepodařilo uložit: " + error.message);
     return;
   }
   await nactiPrispevky();
@@ -397,7 +414,7 @@ async function smazKomentar(prispevekId, clenId) {
     .eq("clen_id", clenId);
 
   if (error) {
-    alert("Smazání se nepodařilo: " + error.message);
+    zobrazToast("Smazání se nepodařilo: " + error.message);
     return;
   }
   await nactiPrispevky();
@@ -405,38 +422,27 @@ async function smazKomentar(prispevekId, clenId) {
 
 // Plovoucí panel se smajlíky pro formulář komentáře: jeden sdílený,
 // přesouvá se k aktivnímu formuláři a vkládá na pozici kurzoru
+// (sdílený plovoucí panel z klient.js)
 function otevriPanelKomentare(inputId, tlacitko) {
-  let panel = document.getElementById("panel-emoji-komentar");
-  if (!panel) {
-    panel = document.createElement("div");
-    panel.id = "panel-emoji-komentar";
-    panel.className = "emoji-panel";
-    panel.innerHTML = ZAKLADNI_EMOJI
-      .map((e) => `<button type="button" class="emoji-volba">${e}</button>`)
-      .join("");
-    panel.addEventListener("click", (udalost) => {
-      const volba = udalost.target.closest(".emoji-volba");
-      if (!volba) return;
-      const pole = document.getElementById(panel.dataset.input);
-      if (!pole) return;
-      const zacatek = pole.selectionStart ?? pole.value.length;
-      const konec = pole.selectionEnd ?? pole.value.length;
-      pole.value = pole.value.slice(0, zacatek) + volba.textContent + pole.value.slice(konec);
-      const novaPozice = zacatek + volba.textContent.length;
-      pole.focus();
-      pole.setSelectionRange(novaPozice, novaPozice);
-    });
-  }
-
   const formular = tlacitko.closest(".komentar-formular");
-  const uzOtevreny = !panel.hidden && panel.nextElementSibling === formular;
-  if (uzOtevreny) {
-    panel.hidden = true;
+  otevriPlovouciEmojiPanel("panel-emoji-komentar", formular, (emoji) => {
+    const pole = document.getElementById(inputId);
+    if (pole) vlozEmojiDoPole(pole, emoji);
+  });
+}
+
+// ---------- Připnutí příspěvku (jen vedení a admin) ----------
+
+async function prepniPripnuti(prispevekId, aktualnePripnuto) {
+  const { error } = await sb.from("prispevky")
+    .update({ pripnuto: !aktualnePripnuto })
+    .eq("id", prispevekId);
+
+  if (error) {
+    zobrazToast("Připnutí se nepodařilo změnit: " + error.message);
     return;
   }
-  panel.dataset.input = inputId;
-  formular.insertAdjacentElement("beforebegin", panel);
-  panel.hidden = false;
+  await nactiPrispevky();
 }
 
 // ---------- Smazání příspěvku ----------
@@ -446,7 +452,7 @@ async function smazPrispevek(prispevekId) {
 
   const { error } = await sb.from("prispevky").delete().eq("id", prispevekId);
   if (error) {
-    alert("Smazání se nepodařilo: " + error.message);
+    zobrazToast("Smazání se nepodařilo: " + error.message);
     return;
   }
 

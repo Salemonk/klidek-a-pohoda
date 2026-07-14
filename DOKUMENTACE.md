@@ -38,6 +38,7 @@ ankety.html           ankety „co budeme hrát“ s hlasováním
 chat.html             společný chat (realtime)
 prispevky.html        nástěnka: příspěvky s obrázky a reakcemi
 vyzvy.html            randomizer stratagemů Helldivers 2 (viz sekce Výzvy)
+galerie.html          galerie momentek: volná síň slávy se screenshoty
 css/styl.css          jediný stylový soubor, barvy přes CSS proměnné v :root
 js/config.js          KONFIG: Supabase URL, veřejný klíč, Discord pozvánka
 js/klient.js          sdílený kód (viz níže)
@@ -49,6 +50,7 @@ assets/fonts/         Nunito (woff2, hostováno lokálně kvůli GDPR, ne Google
 supabase/*.sql        skripty pro založení databáze (spouští se ručně, jednou)
 NAVOD.md              provozní návod pro správce (ne-programátora)
 nahrat-na-github.bat  nasazení jedním poklepáním
+zvednout-verzi.js     vývojářský skript na bump ?v= verzí (viz Cache a verzování)
 ```
 
 Každá stránka načítá skripty v pořadí: `config.js` → CDN `supabase-js` →
@@ -79,8 +81,18 @@ pokud má návštěvník v localStorage uložený přihlašovací token
   (bezpečné proti XSS), povoluje jen http/https (ne javascript:). Používá
   ho formatujText (příspěvky) i chat.js (zprávy).
 - `formatujDatum`, `formatujCasChatu` české formátování dat.
-- `pripravEmojiVyber(tlacitkoId, panelId, poleId)` panel smajlíků,
-  vkládá na pozici kurzoru. Nabídka je v konstantě `ZAKLADNI_EMOJI`.
+- Smajlíky (nabídka v konstantě `ZAKLADNI_EMOJI`):
+  `pripravEmojiVyber(tlacitkoId, panelId, poleId)` pro statický panel
+  u formuláře (chat, nový příspěvek); `otevriPlovouciEmojiPanel(id, kotva,
+  priVyberu)` pro jeden sdílený plovoucí panel, který se přesouvá za prvek
+  `kotva` a při výběru volá callback (reakce a komentáře v prispevky.js);
+  `vlozEmojiDoPole(pole, emoji)` vloží smajlík na pozici kurzoru.
+- `zobrazToast(text, typ)` plovoucí hláška dole uprostřed (náhrada za
+  alert), typ `chyba` (výchozí) nebo `uspech`, sama zmizí po 4,5 s.
+- `prepniMenu(tlacitko)` rozbalí/složí mobilní menu (tlačítko ☰ v hlavičce
+  členských stránek; na desktopu je ☰ skryté přes CSS). Když je ve složeném
+  menu nějaká značka nepřečteného, `nastavZnacku()` rozsvítí na ☰ oranžovou
+  tečku (`.ma-neprectene`).
 - `ziskejPodepsaneAdresy(bucket, cesty)` vrátí `{cesta: adresa}` pro soubory
   v privátním bucketu. **Úspora přenosu:** podepsané adresy (platné 1 h)
   se ukládají do localStorage (`kap-pamet-adres`, prefix kvůli sdílenému
@@ -108,9 +120,10 @@ Základ vytváří `supabase/schema.sql`, rozšíření mají vlastní skripty.
 | `akce`      | název, popis, `datum` (timestamptz), autor | mazat smí autor nebo admin |
 | `ucast`     | hlasování `jdu`/`mozna`/`nejdu` | PK (akce, člen), upsert |
 | `zpravy`    | chat | realtime publikace `supabase_realtime`; kanál „chat“ v chat.js kombinuje postgres_changes (nové/smazané zprávy) a Presence (online členové: klíč = id člena, `track()` po připojení, event `sync` překresluje řádek nad chatem; bez tabulky a SQL) |
-| `prispevky` | nadpis, text, `obrazek` (cesta v bucketu) | |
+| `prispevky` | nadpis, text, `obrazek` (cesta v bucketu), `pripnuto` | řazení `pripnuto desc, vytvoreno desc`; připíná/odepíná jen vedení nebo admin (`je_vedeni()`); skript `pripnute-prispevky.sql` |
 | `reakce`    | emoji reakce na příspěvky | PK (příspěvek, člen, emoji) |
 | `komentare` | komentáře k příspěvkům (text + emoji, bez obrázků) | PK (příspěvek, člen) = **jeden komentář na člena**, vynuceno databází; autor upraví/smaže svůj, vedení maže cizí; skript `komentare.sql` |
+| `momentky`  | volná galerie: `obrazek` (cesta v bucketu `galerie`), nepovinný `popisek` | žádná vazba na konkrétní akci; nahraje kdokoli, maže autor nebo vedení; skript `galerie.sql` |
 | `ankety` + `ankety_moznosti` + `ankety_hlasy` | ankety s hlasováním | zakládá každý člen, hlasují všichni (1 hlas/anketa, PK anketa+člen), maže/uzavírá autor nebo vedení; skript `ankety.sql`. Otázka podporuje řádkové formátování (`formatujRadek`: tučně, kurzíva, odkazy), možnosti jsou čistý text |
 | `zpravy.odpoved_na` | odpověď na zprávu v chatu (citace) | FK na `zpravy.id`, `on delete set null`; skript `odpovedi-chat.sql`. Žádná nová RLS pravidla (existující pravidla platí na celý řádek) |
 | `webhooky`  | adresy Discord webhooků | **tajná**: RLS bez policies, čte ji jen SECURITY DEFINER funkce |
@@ -162,7 +175,8 @@ odeslání; editace akce s novým datem je v akce.js vynuluje (re-remind).
 **Nepřečtený obsah (značky v menu):** `zkontrolujNeprectene(uzivatelId)`
 v klient.js se volá tiše (fire-and-forget, bez čekání) z `vyzadujPrihlaseni()`
 na každé členské stránce. Sledované sekce definuje `SLEDOVANE_SEKCE` (chat →
-zpravy; akce → akce; příspěvky → prispevky + komentare; ankety → ankety).
+zpravy; akce → akce; příspěvky → prispevky + komentare; ankety → ankety;
+galerie → momentky).
 Pro každou sekci se porovná localStorage klíč `kap-posledni-precteny-<sekce>`
 s počtem řádků novějších než tento čas (head-count dotaz, `.neq` vynechá
 vlastní tvorbu člena) a součet se promítne jako značka (`.pocitadlo-znacka`,
@@ -173,6 +187,12 @@ chat dál používá wrapper `oznacChatPrecteny(casIso)` při otevření i při 
 realtime zprávě. Při úplně první návštěvě (žádný záznam v localStorage) se
 historie nepočítá jako nepřečtená, jen se nastaví „teď".
 
+**Počet nových zpráv v titulku záložky:** když je chat otevřený, ale záložka
+na pozadí (`document.hidden`), realtime handler v chat.js přes
+`pripoctiDoTitulku(autorId)` mění titulek na „(N) Chat | …" (vlastní zprávy
+se nepočítají). Návrat na záložku (`visibilitychange`) titulek vrátí.
+Čistě vizuální doplněk, značení přečteného tím není dotčené.
+
 **Odpovědi na zprávu (citace):** sloupec `zpravy.odpoved_na` (skript
 `odpovedi-chat.sql`). Tlačítko ↩ u zprávy zavolá `pripravOdpoved(id)`,
 zobrazí banner „Odpovídáš na…" nad formulářem; odeslání zprávy do něj
@@ -180,6 +200,15 @@ zabalí `odpoved_na`. Vykreslení citace (`citaceHtml()` v chat.js) hledá
 originál v `zpravyMapa` (mapa id→zpráva, plní se při načtení i realtime);
 když originál není v posledních 100 načtených zprávách, zobrazí se
 srozumitelná náhrada místo chyby.
+
+**Načíst starší zprávy:** chat natáhne při otevření jen posledních 100
+zpráv. Tlačítko „Načíst starší zprávy" (`nactiStarsiZpravy()` v chat.js)
+dotáhne další dávku přes `.lt("vytvoreno", nejstarsiZprava)`, zmizí samo,
+jakmile dorazí méně zpráv než celá dávka (žádná starší historie). Nové
+zprávy se vkládají nahoru jako jeden `DocumentFragment`
+(`vlozZpravyNaZacatek()`) — vkládání po jedné by pořadí obrátilo. Pozice
+scrollu se po vložení nezmění (`scrollTop` se posune o rozdíl výšky okna
+před/po), takže se čtenáři "nehne" pohled.
 
 **Mini profil člena:** klik na libovolný avatar (chat, online seznam,
 příspěvky, přehled členů) zavolá `otevriMiniProfil(clenId)` v klient.js —
@@ -236,9 +265,20 @@ GitHub Pages běží na HTTPS, takže tam funguje bez problémů.
 ## Cache a verzování
 
 Odkazy na CSS/JS nesou parametr verze (`styl.css?v=8`, `klient.js?v=7`).
-**Při každé změně souboru zvedněte číslo ve všech HTML** (hromadně např.
-nahrazením řetězce), jinak prohlížeče členů podrží starou verzi a stránky
-se mohou rozbít nekompatibilitou skriptů. HTML samotné se neverzuje.
+**Při každé změně souboru zvedněte číslo ve všech HTML**, jinak prohlížeče
+členů podrží starou verzi a stránky se mohou rozbít nekompatibilitou
+skriptů. HTML samotné se neverzuje.
+
+Na zvedání verzí slouží skript `zvednout-verzi.js` (kořen projektu):
+
+```
+node zvednout-verzi.js styl klient   # zvedne styl.css a klient.js všude
+node zvednout-verzi.js --kontrola    # jen ověří konzistenci verzí
+```
+
+Názvy se zadávají bez přípony (styl, klient, chat, prispevky, ankety,
+akce, vyzvy, …). Skript najde nejvyšší číslo a všude nastaví o 1 vyšší;
+při překlepu vypíše známé názvy a nic nezmění.
 
 ## Jak přidat novou funkci (checklist)
 
@@ -247,7 +287,8 @@ se mohou rozbít nekompatibilitou skriptů. HTML samotné se neverzuje.
 2. UI do příslušného HTML, logika do `js/<stranka>.js`, sdílené věci
    do `klient.js`.
 3. Uživatelský obsah vždy přes `esc()`. Texty česky, bez pomlček.
-4. Zvednout `?v=` verze, otestovat lokálně, nasadit batem.
+4. Zvednout `?v=` verze (`node zvednout-verzi.js <nazvy>`), otestovat
+   lokálně, nasadit batem.
 
 ## Tlačítko „Hledám hráče“ (LFG)
 
@@ -264,6 +305,35 @@ textu (závorka s obsahem pole, jen když není prázdné) je zrcadlená
 1:1 s tím, co dělá SQL funkce. Textové pole `#lfg-text` je vložené
 přímo do věty šablony (`.lfg-sablona`), aby člen viděl, kam přesně
 jeho text v Discord zprávě zapadne.
+
+## Galerie momentek
+
+Stránka `galerie.html` + `js/galerie.js`. Volná galerie (žádná vazba na
+konkrétní akci ze seznamu Akcí) — obrázek + nepovinný popisek. Technicky
+stejný vzor jako obrázky u příspěvků: soukromý bucket `galerie` (skript
+`galerie.sql`), klientské zmenšení přes `zmensiObrazek()`, zobrazení přes
+`ziskejPodepsaneAdresy()` (stejná paměť adres jako u příspěvků/avatarů).
+Nahrát může kdokoli přihlášený, smazat autor nebo vedení/admin.
+
+Zobrazení: mřížka `.galerie-mrizka` (CSS grid, `auto-fill`), stránkuje se po
+20 (`DAVKA_MOMENTEK`), tlačítko „Načíst starší momentky“ zmizí, jakmile
+dorazí méně položek než celá dávka — stejný vzor jako u příspěvků a teď
+i u chatu.
+
+## Připnuté příspěvky a vložení screenshotu
+
+**Připnutí** (skript `pripnute-prispevky.sql`): sloupec `prispevky.pripnuto`,
+vedení/admin ho přepínají tlačítkem „připnout“/„odepnout“
+(`prepniPripnuti()`), řazení je `pripnuto desc, vytvoreno desc` — připnuté
+je vždy nahoře bez ohledu na stránkování starších příspěvků. Připnutý
+příspěvek má oranžový rámeček (`.prispevek.pripnuto`) a odznak „📌 připnuto“.
+
+**Vložení screenshotu ze schránky:** `paste` posluchač na textu příspěvku
+(`prispevky.js`) hledá v `clipboardData.items` obrázek; když ho najde,
+sestaví z něj přes `DataTransfer` nový `FileList` a přiřadí ho do
+`#obrazek-prispevku` — dál pokračuje úplně stejná cesta nahrávání jako při
+ručním výběru souboru (zmenšení, upload do bucketu). Vizuální potvrzení:
+text u pole obrázku (`#info-obrazku`) a `zobrazToast()`.
 
 ## Komentáře k příspěvkům
 

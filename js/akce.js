@@ -226,7 +226,7 @@ async function ulozUpravuAkce(udalost, akceId) {
   const { error } = await sb.from("akce").update(zmeny).eq("id", akceId);
 
   if (error) {
-    alert("Úpravu se nepodařilo uložit: " + error.message);
+    zobrazToast("Úpravu se nepodařilo uložit: " + error.message);
     return;
   }
   await nactiAkce();
@@ -242,7 +242,7 @@ async function hlasuj(akceId, stav) {
   });
 
   if (error) {
-    alert("Hlasování se nepodařilo: " + error.message);
+    zobrazToast("Hlasování se nepodařilo: " + error.message);
     return;
   }
   await nactiAkce();
@@ -255,7 +255,7 @@ async function smazAkci(akceId) {
 
   const { error } = await sb.from("akce").delete().eq("id", akceId);
   if (error) {
-    alert("Smazání se nepodařilo: " + error.message);
+    zobrazToast("Smazání se nepodařilo: " + error.message);
     return;
   }
   await nactiAkce();

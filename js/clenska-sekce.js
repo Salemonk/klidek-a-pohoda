@@ -116,7 +116,7 @@ function pripravUpravuStavu() {
       .eq("id", 1);
 
     if (error) {
-      alert("Uložení se nepodařilo: " + error.message);
+      zobrazToast("Uložení se nepodařilo: " + error.message);
       return;
     }
     formular.style.display = "none";
@@ -173,7 +173,7 @@ function pripravUpravuPrezdivky(uzivatelId) {
       .eq("id", uzivatelId);
 
     if (error) {
-      alert("Uložení se nepodařilo: " + error.message);
+      zobrazToast("Uložení se nepodařilo: " + error.message);
       return;
     }
     document.getElementById("pozdrav").textContent = `Ahoj, ${novaPrezdivka}! 👋`;
@@ -270,7 +270,7 @@ async function vytvorPozvanku() {
   const { error } = await sb.from("pozvanky").insert({ kod: kod, vytvoril: mujProfil.id });
 
   if (error) {
-    alert("Pozvánku se nepodařilo vytvořit: " + error.message);
+    zobrazToast("Pozvánku se nepodařilo vytvořit: " + error.message);
     return;
   }
 
@@ -339,7 +339,7 @@ async function smazPozvanku(kod) {
 
   const { error } = await sb.from("pozvanky").delete().eq("kod", kod);
   if (error) {
-    alert("Zrušení se nepodařilo: " + error.message);
+    zobrazToast("Zrušení se nepodařilo: " + error.message);
     return;
   }
   await nactiPozvanky();
@@ -419,7 +419,7 @@ async function zmenRoli(clenId, vyber) {
   });
 
   if (error) {
-    alert("Změnu role se nepodařilo uložit: " + error.message);
+    zobrazToast("Změnu role se nepodařilo uložit: " + error.message);
   }
   await nactiPrehledClenu();
 }

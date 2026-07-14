@@ -9,6 +9,10 @@ let avatary = {}; // id člena → adresa avataru
 let zpravyMapa = {}; // id zprávy → zpráva (pro zobrazení citace u odpovědi)
 let odpovidamNa = null; // id zprávy, na kterou se právě odpovídá
 
+const DAVKA_ZPRAV = 100;
+let nejstarsiZprava = null; // vytvoreno nejstarší aktuálně zobrazené zprávy
+let vsechnyStarsiNacteny = false;
+
 async function spustStranku() {
   const session = await vyzadujPrihlaseni();
   if (!session) return;
@@ -22,6 +26,7 @@ async function spustStranku() {
   pripravOdesilani();
   pripravRealtime();
   pripravEmojiVyber("emoji-tlacitko-chat", "emoji-panel-chat", "chat-text");
+  document.getElementById("tlacitko-starsi-zpravy").addEventListener("click", nactiStarsiZpravy);
 }
 
 // ---------- Načtení historie ----------
@@ -34,7 +39,7 @@ async function nactiZpravy() {
     .from("zpravy")
     .select("id, autor, text, vytvoreno, odpoved_na")
     .order("vytvoreno", { ascending: false })
-    .limit(100);
+    .limit(DAVKA_ZPRAV);
 
   if (error) {
     okno.innerHTML = "<p>Zprávy se nepodařilo načíst.</p>";
@@ -44,19 +49,67 @@ async function nactiZpravy() {
   okno.innerHTML = "";
   if (data.length === 0) {
     okno.innerHTML = `<p class="poznamka">Zatím tu nejsou žádné zprávy. Napiš první! 🙂</p>`;
+    vsechnyStarsiNacteny = true;
   } else {
     const serazene = data.reverse();
     for (const zprava of serazene) pridejZpravuDoOkna(zprava);
     // Chat jsme právě otevřeli — poslední zprávu bereme jako přečtenou
     oznacChatPrecteny(serazene[serazene.length - 1].vytvoreno);
+
+    nejstarsiZprava = serazene[0].vytvoreno;
+    // Přišlo míň než celá dávka = žádná starší historie už není
+    vsechnyStarsiNacteny = data.length < DAVKA_ZPRAV;
+    document.getElementById("tlacitko-starsi-zpravy").style.display = vsechnyStarsiNacteny ? "none" : "block";
   }
   posunDolu();
 }
 
+// Doplní starší zprávy nahoru nad ty už zobrazené (tlačítko "Načíst starší")
+async function nactiStarsiZpravy() {
+  if (vsechnyStarsiNacteny || !nejstarsiZprava) return;
+
+  const tlacitko = document.getElementById("tlacitko-starsi-zpravy");
+  tlacitko.disabled = true;
+  tlacitko.textContent = "Načítám…";
+
+  const { data, error } = await sb
+    .from("zpravy")
+    .select("id, autor, text, vytvoreno, odpoved_na")
+    .lt("vytvoreno", nejstarsiZprava)
+    .order("vytvoreno", { ascending: false })
+    .limit(DAVKA_ZPRAV);
+
+  tlacitko.disabled = false;
+  tlacitko.textContent = "Načíst starší zprávy";
+
+  if (error || !data || data.length === 0) {
+    vsechnyStarsiNacteny = true;
+    tlacitko.style.display = "none";
+    return;
+  }
+
+  // Zachováme pozici scrollu, ať se pohled po vložení starších zpráv
+  // nahoru "nehne" (jinak by prohlížeč zůstal na stejném scrollTop
+  // a obsah pod kurzorem by uskočil dolů)
+  const okno = document.getElementById("chat-okno");
+  const vyskaPred = okno.scrollHeight;
+
+  const serazene = data.reverse();
+  vlozZpravyNaZacatek(serazene);
+  nejstarsiZprava = serazene[0].vytvoreno;
+
+  okno.scrollTop += okno.scrollHeight - vyskaPred;
+
+  if (data.length < DAVKA_ZPRAV) {
+    vsechnyStarsiNacteny = true;
+    tlacitko.style.display = "none";
+  }
+}
+
 // ---------- Vykreslení jedné zprávy ----------
 
-function pridejZpravuDoOkna(zprava) {
-  const okno = document.getElementById("chat-okno");
+// Sestaví element zprávy (bez vložení do okna) a zapíše ji do zpravyMapa
+function vytvorZpravovyPrvek(zprava) {
   const profil = profily[zprava.autor];
   const jeMoje = zprava.autor === mojeId;
   const smiSmazat = jeMoje || jeVedeni(mujProfil);
@@ -76,7 +129,21 @@ function pridejZpravuDoOkna(zprava) {
     </div>
     ${citaceHtml(zprava.odpoved_na)}
     <div class="zprava-text">${linkujOdkazy(esc(zprava.text))}</div>`;
-  okno.appendChild(prvek);
+  return prvek;
+}
+
+function pridejZpravuDoOkna(zprava) {
+  document.getElementById("chat-okno").appendChild(vytvorZpravovyPrvek(zprava));
+}
+
+// Vloží celou dávku zpráv (vzestupně seřazenou) na začátek okna najednou,
+// ať zůstane správné pořadí (opakované vkládání jedné po druhé před
+// firstChild by je otočilo)
+function vlozZpravyNaZacatek(zpravySerazene) {
+  const okno = document.getElementById("chat-okno");
+  const fragment = document.createDocumentFragment();
+  for (const zprava of zpravySerazene) fragment.appendChild(vytvorZpravovyPrvek(zprava));
+  okno.insertBefore(fragment, okno.firstChild);
 }
 
 // Malý citovaný úryvek nad zprávou, na kterou se odpovídá
@@ -114,7 +181,7 @@ function pripravOdesilani() {
     const { error } = await sb.from("zpravy")
       .insert({ autor: mojeId, text: text, odpoved_na: odpovedId });
     if (error) {
-      alert("Zprávu se nepodařilo odeslat: " + error.message);
+      zobrazToast("Zprávu se nepodařilo odeslat: " + error.message);
       pole.value = text; // vrátíme text zpět, ať o něj člen nepřijde
     }
     pole.focus();
@@ -169,6 +236,8 @@ function pripravRealtime() {
         posunDolu();
         // Chat je otevřený, takže i nová zpráva se rovnou počítá za přečtenou
         oznacChatPrecteny(payload.new.vytvoreno);
+        // Když je záložka na pozadí, ukážeme počet nových zpráv v titulku
+        pripoctiDoTitulku(payload.new.autor);
       })
     .on("postgres_changes",
       { event: "DELETE", schema: "public", table: "zpravy" },
@@ -185,6 +254,28 @@ function pripravRealtime() {
       }
     });
 }
+
+// ---------- Počet nových zpráv v titulku záložky ----------
+// Když je web na pozadí (člen kouká jinam) a přijde nová zpráva,
+// titulek záložky se změní na "(2) Chat | …". Návratem na záložku
+// se vrátí původní titulek. Čistě vizuální doplněk, značení
+// přečteného v menu tím není dotčené.
+
+const PUVODNI_TITULEK = document.title;
+let novychVTitulku = 0;
+
+function pripoctiDoTitulku(autorId) {
+  if (!document.hidden || autorId === mojeId) return;
+  novychVTitulku++;
+  document.title = `(${novychVTitulku}) ${PUVODNI_TITULEK}`;
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && novychVTitulku > 0) {
+    novychVTitulku = 0;
+    document.title = PUVODNI_TITULEK;
+  }
+});
 
 // ---------- Přehled členů online ----------
 
@@ -226,7 +317,7 @@ async function smazZpravu(zpravaId) {
 
   const { error } = await sb.from("zpravy").delete().eq("id", zpravaId);
   if (error) {
-    alert("Smazání se nepodařilo: " + error.message);
+    zobrazToast("Smazání se nepodařilo: " + error.message);
     return;
   }
   // Zprávu odstraní realtime událost DELETE; pro jistotu ji odstraníme i ručně

@@ -153,6 +153,16 @@ const ZAKLADNI_EMOJI = [
   "🏆", "⚔️", "🛡️", "⛑️", "➕", "❤️‍🩹", "🏹", "🎯", "🍕", "🍺", "☕",
 ];
 
+// Vloží smajlík do textového pole na pozici kurzoru a vrátí do něj fokus
+function vlozEmojiDoPole(pole, emoji) {
+  const zacatek = pole.selectionStart ?? pole.value.length;
+  const konec = pole.selectionEnd ?? pole.value.length;
+  pole.value = pole.value.slice(0, zacatek) + emoji + pole.value.slice(konec);
+  const novaPozice = zacatek + emoji.length;
+  pole.focus();
+  pole.setSelectionRange(novaPozice, novaPozice);
+}
+
 // Propojí tlačítko 😊, panel se smajlíky a textové pole.
 // Kliknutí na smajlík ho vloží na pozici kurzoru.
 function pripravEmojiVyber(tlacitkoId, panelId, poleId) {
@@ -172,13 +182,37 @@ function pripravEmojiVyber(tlacitkoId, panelId, poleId) {
   panel.addEventListener("click", (udalost) => {
     const volba = udalost.target.closest(".emoji-volba");
     if (!volba) return;
-    const zacatek = pole.selectionStart ?? pole.value.length;
-    const konec = pole.selectionEnd ?? pole.value.length;
-    pole.value = pole.value.slice(0, zacatek) + volba.textContent + pole.value.slice(konec);
-    const novaPozice = zacatek + volba.textContent.length;
-    pole.focus();
-    pole.setSelectionRange(novaPozice, novaPozice);
+    vlozEmojiDoPole(pole, volba.textContent);
   });
+}
+
+// Plovoucí panel se smajlíky: jeden sdílený prvek #id, který se přesouvá
+// za prvek "kotva" a při výběru zavolá priVyberu(emoji). Opakované kliknutí
+// na stejném místě panel schová (toggle). Používají ho reakce a komentáře.
+function otevriPlovouciEmojiPanel(id, kotva, priVyberu) {
+  let panel = document.getElementById(id);
+  if (!panel) {
+    panel = document.createElement("div");
+    panel.id = id;
+    panel.className = "emoji-panel";
+    panel.innerHTML = ZAKLADNI_EMOJI
+      .map((e) => `<button type="button" class="emoji-volba">${e}</button>`)
+      .join("");
+    panel.addEventListener("click", (udalost) => {
+      const volba = udalost.target.closest(".emoji-volba");
+      if (!volba) return;
+      panel._priVyberu(volba.textContent);
+    });
+  }
+
+  const uzOtevreny = !panel.hidden && panel.previousElementSibling === kotva;
+  if (uzOtevreny) {
+    panel.hidden = true;
+    return;
+  }
+  panel._priVyberu = priVyberu;
+  kotva.insertAdjacentElement("afterend", panel);
+  panel.hidden = false;
 }
 
 // ---------- Paměť adres obrázků (úspora přenosu) ----------
@@ -346,6 +380,7 @@ const SLEDOVANE_SEKCE = {
   prispevky: { href: "prispevky.html", dotazy: [{ tabulka: "prispevky", autor: "autor" },
                                                 { tabulka: "komentare", autor: "clen_id" }] },
   ankety:    { href: "ankety.html",    dotazy: [{ tabulka: "ankety",    autor: "autor" }] },
+  galerie:   { href: "galerie.html",   dotazy: [{ tabulka: "momentky",  autor: "autor" }] },
 };
 
 // Uloží, dokdy má člen sekci přečtenou (klíč chatu zůstává stejný jako
@@ -404,6 +439,20 @@ function nastavZnacku(odkaz, pocet) {
   } else if (znacka) {
     znacka.remove();
   }
+
+  // Na mobilu je menu složené za tlačítkem ☰; tečka na něm prozradí,
+  // že se uvnitř skrývá nějaké nepřečtené
+  const prepinac = document.querySelector(".menu-prepinac");
+  if (prepinac) {
+    const nejakeNeprectene = !!document.querySelector(".menu .pocitadlo-znacka");
+    prepinac.classList.toggle("ma-neprectene", nejakeNeprectene);
+  }
+}
+
+// Rozbalí / složí mobilní menu (tlačítko ☰ v hlavičce členských stránek)
+function prepniMenu(tlacitko) {
+  const menu = tlacitko.nextElementSibling;
+  if (menu) menu.classList.toggle("otevrene");
 }
 
 // ---------- Zmenšení obrázku před nahráním ----------
@@ -537,4 +586,26 @@ function zobrazHlasku(element, text) {
 function skryjHlasku(element) {
   element.textContent = "";
   element.classList.remove("viditelna");
+}
+
+// ---------- Plovoucí hláška (toast) ----------
+// Jemná náhrada za alert(): hláška dole uprostřed obrazovky, sama zmizí.
+// typ: "chyba" (červený rámeček, výchozí) nebo "uspech" (modrý akcent)
+
+let toastCasovac = null;
+
+function zobrazToast(text, typ = "chyba") {
+  let toast = document.getElementById("toast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "toast";
+    document.body.appendChild(toast);
+  }
+  toast.className = "toast " + typ;
+  toast.textContent = text;
+
+  // Opakované volání jen nahradí text a natáhne čas zobrazení
+  clearTimeout(toastCasovac);
+  toastCasovac = setTimeout(() => toast.classList.add("skryty"), 4500);
+  toast.classList.remove("skryty");
 }

@@ -227,6 +227,9 @@ databázi doporučujeme čas od času ručně stáhnout přes SQL Editor.
 - `supabase/pripominky-akci.sql`: automatické připomínky akcí na Discord
   (den a hodinu předem). Vyžaduje běžící `discord-upozorneni.sql` a rozšíření
   pg_cron (pokud se nezapne samo, povolte v Database → Extensions → pg_cron).
+- `supabase/hledam-hrace.sql`: tlačítko „Hledám hráče" na Přehledu, pošle
+  zprávu se zmínkou Discord role (před spuštěním doplňte adresu webhooku
+  a ID role). Vyžaduje běžící `discord-upozorneni.sql`.
 - `supabase/ankety.sql`: ankety s hlasováním (stránka Ankety v členské sekci).
 - `supabase/odpovedi-chat.sql`: odpovědi na zprávu (citace) v chatu.
 - `supabase/automaticky-uklid.sql`: jednou týdně smaže staré nevyužité
@@ -238,6 +241,10 @@ databázi doporučujeme čas od času ručně stáhnout přes SQL Editor.
   webhooku). Vyžaduje běžící `discord-upozorneni.sql`.
 - `supabase/komentare.sql`: komentáře k příspěvkům na nástěnce (jeden
   komentář na člena a příspěvek). Vyžaduje běžící `role-vedeni-a-upravy.sql`.
+- `supabase/pripnute-prispevky.sql`: připínání příspěvků na nástěnce
+  (jen vedení a admin). Vyžaduje běžící `role-vedeni-a-upravy.sql`.
+- `supabase/galerie.sql`: galerie momentek (stránka Galerie), volná
+  bez vazby na konkrétní akci. Vyžaduje běžící `role-vedeni-a-upravy.sql`.
 
 **Přidání stratagemů po novém Warbondu:** otevřete `js/stratagemy-data.js`
 (obyčejný textový soubor), přidejte/odeberte položky v poli `STRATAGEMY`

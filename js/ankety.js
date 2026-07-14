@@ -167,7 +167,7 @@ async function hlasuj(anketaId, moznostId) {
   });
 
   if (error) {
-    alert("Hlasování se nepodařilo: " + error.message);
+    zobrazToast("Hlasování se nepodařilo: " + error.message);
     return;
   }
   await nactiAnkety();
@@ -180,7 +180,7 @@ async function prepniUzavreni(anketaId, jeUzavrena) {
     .update({ uzavrena: !jeUzavrena })
     .eq("id", anketaId);
   if (error) {
-    alert("Změnu se nepodařilo uložit: " + error.message);
+    zobrazToast("Změnu se nepodařilo uložit: " + error.message);
     return;
   }
   await nactiAnkety();
@@ -190,7 +190,7 @@ async function smazAnketu(anketaId) {
   if (!confirm("Opravdu smazat tuto anketu i s hlasy?")) return;
   const { error } = await sb.from("ankety").delete().eq("id", anketaId);
   if (error) {
-    alert("Smazání se nepodařilo: " + error.message);
+    zobrazToast("Smazání se nepodařilo: " + error.message);
     return;
   }
   await nactiAnkety();

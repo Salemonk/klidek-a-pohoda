@@ -666,6 +666,9 @@ textarea { resize: vertical; min-height: 100px; }
 }
 .prispevek:hover { border-color: var(--akcent); }
 .prispevek h3 { color: var(--akcent); margin-bottom: 4px; }
+.prispevek.pripnuto,
+.prispevek.pripnuto:hover { border-color: var(--akcent-2); }
+.prispevek h3 .stitek { margin-left: 0; margin-right: 8px; }
 .prispevek-meta { color: var(--text-tlumeny); font-size: 0.85rem; margin-bottom: 10px; }
 .prispevek-text ul { margin: 6px 0 6px 22px; }
 .prispevek-text p { margin-bottom: 6px; }
@@ -680,6 +683,44 @@ textarea { resize: vertical; min-height: 100px; }
   border-radius: 10px;
   margin-top: 10px;
   border: 1px solid var(--ohraniceni);
+}
+
+/* ---------- Galerie momentek ---------- */
+
+.galerie-mrizka {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+.momentka {
+  margin: 0;
+  background: var(--panel-svetly);
+  border: 1px solid var(--ohraniceni);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.momentka:hover { border-color: var(--akcent); }
+.momentka-obrazek {
+  display: block;
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+.momentka figcaption { padding: 10px 12px; }
+.momentka-popisek { display: block; margin-bottom: 6px; }
+.momentka-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  color: var(--text-tlumeny);
+  font-size: 0.85rem;
+}
+
+.galerie-nacist-starsi {
+  grid-column: 1 / -1;
+  justify-self: center;
 }
 
 input[type="file"] {
@@ -1069,7 +1110,56 @@ select.volba-role {
 }
 .modal-zavrit:hover { color: var(--chyba); }
 
+/* ---------- Plovoucí hláška (toast, náhrada za alert) ---------- */
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(90vw, 480px);
+  background: var(--panel);
+  border: 1px solid var(--chyba);
+  border-radius: 10px;
+  padding: 12px 18px;
+  z-index: 120;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+  transition: opacity 0.25s, transform 0.25s;
+}
+.toast.uspech { border-color: var(--akcent); }
+.toast.skryty {
+  opacity: 0;
+  transform: translateX(-50%) translateY(10px);
+  pointer-events: none;
+}
+
 /* ---------- Mobily ---------- */
+
+/* ---------- Přepínač mobilního menu (jen členské stránky) ---------- */
+
+.menu-prepinac {
+  display: none; /* na desktopu schovaný, menu je celé vidět */
+  position: relative;
+  background: none;
+  border: 1px solid var(--ohraniceni);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 1.2rem;
+  line-height: 1;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+/* Oranžová tečka: ve schovaném menu je nějaké nepřečtené */
+.menu-prepinac.ma-neprectene::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--akcent-2);
+}
 
 @media (max-width: 600px) {
   .hero { padding: 60px 0 50px; }
@@ -1080,4 +1170,24 @@ select.volba-role {
   .menu { gap: 10px 14px; }
   .chat-okno { height: 50vh; }
   .zprava-text { max-width: 100%; }
+
+  /* Členské stránky (mají .menu-prepinac): menu složené do jednoho řádku
+     s tlačítkem ☰, po rozkliknutí svislý seznam přes celou šířku */
+  .hlavicka-vnitrek:has(.menu-prepinac) { justify-content: space-between; }
+  .menu-prepinac { display: block; }
+  .menu-prepinac + .menu { display: none; }
+  .menu-prepinac + .menu.otevrene {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    flex-basis: 100%;
+    gap: 0;
+    padding-top: 6px;
+  }
+  .menu-prepinac + .menu.otevrene a,
+  .menu-prepinac + .menu.otevrene button {
+    padding: 10px 4px;
+    border-top: 1px solid var(--ohraniceni);
+    text-align: left;
+  }
 }

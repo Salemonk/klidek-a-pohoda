@@ -9,13 +9,14 @@
   <meta name="theme-color" content="#12141c">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="stylesheet" href="css/styl.css?v=28">
+  <link rel="stylesheet" href="css/styl.css?v=31">
 </head>
 <body>
 
   <header class="hlavicka">
     <div class="obsah hlavicka-vnitrek">
       <a href="index.html" class="logo">🎮 Klídek <span>a pohoda</span></a>
+      <button class="menu-prepinac" onclick="prepniMenu(this)" aria-label="Menu">☰</button>
       <nav class="menu">
         <a href="clenska-sekce.html" class="aktivni">Přehled</a>
         <a href="akce.html">Akce</a>
@@ -23,6 +24,7 @@
         <a href="prispevky.html">Příspěvky</a>
         <a href="ankety.html">Ankety</a>
         <a href="vyzvy.html">Výzvy</a>
+        <a href="galerie.html">Galerie</a>
         <button class="tlacitko-nenapadne" onclick="odhlasit()">Odhlásit</button>
       </nav>
     </div>
@@ -127,8 +129,8 @@
 
   <script src="js/config.js?v=20"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/klient.js?v=22"></script>
-  <script src="js/clenska-sekce.js?v=20"></script>
+  <script src="js/klient.js?v=24"></script>
+  <script src="js/clenska-sekce.js?v=21"></script>
   <script src="js/pwa.js?v=1"></script>
 </body>
 </html>
