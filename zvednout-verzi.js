@@ -84,6 +84,26 @@ function zvedni(nazvy) {
     }
     console.log(`${nazev}: nová verze v=${nova} (${zmen} odkazů)`);
   }
+
+  zvedniCacheSw();
+}
+
+// Zvedne číslo v názvu cache service workeru (sw.js). Díky tomu si
+// prohlížeče členů po nasazení smažou starou cache (activate handler
+// v sw.js maže všechny cache s jiným názvem) a nehromadí se v ní
+// zastaralé verzované soubory.
+function zvedniCacheSw() {
+  const cestaSw = path.join(slozka, "sw.js");
+  if (!fs.existsSync(cestaSw)) return;
+
+  const obsah = fs.readFileSync(cestaSw, "utf8");
+  const novy = obsah.replace(/kap-cache-v(\d+)/, (cele, cislo) => `kap-cache-v${Number(cislo) + 1}`);
+  if (novy === obsah) {
+    console.warn("sw.js: název cache se nepodařilo najít, nic se nemění.");
+    return;
+  }
+  fs.writeFileSync(cestaSw, novy);
+  console.log(`sw.js: cache ${novy.match(/kap-cache-v\d+/)[0]} (stará se po nasazení sama smaže)`);
 }
 
 const argumenty = process.argv.slice(2);

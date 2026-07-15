@@ -18,8 +18,8 @@ async function spustStranku() {
   if (!session) return;
 
   mojeId = session.user.id;
-  mujProfil = await nactiMujProfil(mojeId);
-  profily = await nactiVsechnyProfily();
+  // Profil a seznam členů na sobě nezávisí, načtou se souběžně
+  [mujProfil, profily] = await Promise.all([nactiMujProfil(mojeId), nactiVsechnyProfily()]);
   avatary = await nactiAdresyAvataru(profily);
 
   await nactiZpravy();
@@ -124,8 +124,8 @@ function vytvorZpravovyPrvek(zprava) {
       ${avatarHtml(profil, avatary[zprava.autor])}
       <span class="zprava-autor">${profil ? esc(profil.prezdivka) : "?"}</span>
       <span class="zprava-cas">${formatujCasChatu(zprava.vytvoreno)}</span>
-      <button class="zprava-odpovedet" onclick="pripravOdpoved(${zprava.id})" title="Odpovědět">↩</button>
-      ${smiSmazat ? `<button class="zprava-smazat" onclick="smazZpravu(${zprava.id})" title="Smazat zprávu">✖</button>` : ""}
+      <button class="zprava-odpovedet" onclick="pripravOdpoved(${zprava.id})" title="Odpovědět" aria-label="Odpovědět">↩</button>
+      ${smiSmazat ? `<button class="zprava-smazat" onclick="smazZpravu(${zprava.id})" title="Smazat zprávu" aria-label="Smazat zprávu">✖</button>` : ""}
     </div>
     ${citaceHtml(zprava.odpoved_na)}
     <div class="zprava-text">${linkujOdkazy(esc(zprava.text))}</div>`;
@@ -201,7 +201,7 @@ function pripravOdpoved(zpravaId) {
 
   const banner = document.getElementById("odpoved-banner");
   banner.innerHTML = `Odpovídáš na <strong>${jmeno}</strong>: ${uryvek}
-    <button type="button" onclick="zrusOdpoved()" title="Zrušit odpověď">✖</button>`;
+    <button type="button" onclick="zrusOdpoved()" title="Zrušit odpověď" aria-label="Zrušit odpověď">✖</button>`;
   banner.hidden = false;
   document.getElementById("chat-text").focus();
 }

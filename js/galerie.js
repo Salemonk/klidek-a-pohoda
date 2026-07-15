@@ -19,8 +19,8 @@ async function spustStranku() {
 
   oznacSekciPrectenou("galerie");
   mojeId = session.user.id;
-  mujProfil = await nactiMujProfil(mojeId);
-  profily = await nactiVsechnyProfily();
+  // Profil a seznam členů na sobě nezávisí, načtou se souběžně
+  [mujProfil, profily] = await Promise.all([nactiMujProfil(mojeId), nactiVsechnyProfily()]);
   avatary = await nactiAdresyAvataru(profily);
 
   pripravFormular();

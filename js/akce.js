@@ -19,8 +19,8 @@ async function spustStranku() {
 
   oznacSekciPrectenou("akce");
   mojeId = session.user.id;
-  mujProfil = await nactiMujProfil(mojeId);
-  profily = await nactiVsechnyProfily();
+  // Profil a seznam členů na sobě nezávisí, načtou se souběžně
+  [mujProfil, profily] = await Promise.all([nactiMujProfil(mojeId), nactiVsechnyProfily()]);
 
   // Akce zakládá jen vedení a admin, ostatním formulář neukazujeme
   if (jeVedeni(mujProfil)) {

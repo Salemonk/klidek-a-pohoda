@@ -399,11 +399,12 @@ function oznacChatPrecteny(casIso) {
 
 // Zjistí počty nepřečteného ve všech sekcích a promítne je do menu.
 // Vlastní tvorba člena (uzivatelId) se nepočítá; sekce, na které člen
-// právě je (odkaz .aktivni), se přeskočí.
+// právě je (odkaz .aktivni), se přeskočí. Všechny dotazy běží souběžně,
+// ať se stránka nezdrží čekáním na několik dotazů za sebou.
 async function zkontrolujNeprectene(uzivatelId) {
-  for (const [sekce, info] of Object.entries(SLEDOVANE_SEKCE)) {
+  await Promise.all(Object.entries(SLEDOVANE_SEKCE).map(async ([sekce, info]) => {
     const odkaz = document.querySelector(`a[href="${info.href}"]`);
-    if (!odkaz || odkaz.classList.contains("aktivni")) continue;
+    if (!odkaz || odkaz.classList.contains("aktivni")) return;
 
     let posledni;
     try { posledni = localStorage.getItem("kap-posledni-precteny-" + sekce); } catch (e) { return; }
@@ -412,19 +413,18 @@ async function zkontrolujNeprectene(uzivatelId) {
       // Poprvé s touto funkcí — historii nezobrazujeme jako nepřečtenou,
       // počítáme až od teď
       oznacSekciPrectenou(sekce);
-      continue;
+      return;
     }
 
-    let celkem = 0;
-    for (const dotaz of info.dotazy) {
+    const pocty = await Promise.all(info.dotazy.map(async (dotaz) => {
       const { count } = await sb.from(dotaz.tabulka)
         .select(dotaz.autor, { count: "exact", head: true })
         .gt("vytvoreno", posledni)
         .neq(dotaz.autor, uzivatelId);
-      celkem += count || 0;
-    }
-    nastavZnacku(odkaz, celkem);
-  }
+      return count || 0;
+    }));
+    nastavZnacku(odkaz, pocty.reduce((soucet, n) => soucet + n, 0));
+  }));
 }
 
 function nastavZnacku(odkaz, pocet) {
@@ -452,8 +452,44 @@ function nastavZnacku(odkaz, pocet) {
 // Rozbalí / složí mobilní menu (tlačítko ☰ v hlavičce členských stránek)
 function prepniMenu(tlacitko) {
   const menu = tlacitko.nextElementSibling;
-  if (menu) menu.classList.toggle("otevrene");
+  if (menu) {
+    menu.classList.toggle("otevrene");
+    tlacitko.setAttribute("aria-expanded", menu.classList.contains("otevrene") ? "true" : "false");
+  }
 }
+
+// ---------- Menu členských stránek (jedno místo pro všechny) ----------
+//
+// Odkazy v menu se generují tady, aby se při přidání nové stránky
+// neupravovalo 7 HTML souborů. HTML stránek obsahuje jen prázdné
+// <nav class="menu" data-clenske></nav>; veřejné stránky (index,
+// přihlášení…) mají vlastní menu bez markeru a téhle funkce se netýkají.
+
+const POLOZKY_MENU = [
+  { href: "clenska-sekce.html", text: "Přehled" },
+  { href: "akce.html",          text: "Akce" },
+  { href: "chat.html",          text: "Chat" },
+  { href: "prispevky.html",     text: "Příspěvky" },
+  { href: "ankety.html",        text: "Ankety" },
+  { href: "vyzvy.html",         text: "Výzvy" },
+  { href: "galerie.html",       text: "Galerie" },
+];
+
+function vykresliClenskeMenu() {
+  const nav = document.querySelector("nav.menu[data-clenske]");
+  if (!nav) return;
+
+  const aktualni = location.pathname.split("/").pop() || "index.html";
+  nav.innerHTML = POLOZKY_MENU.map((polozka) =>
+    `<a href="${polozka.href}"${polozka.href === aktualni ? ' class="aktivni"' : ""}>${polozka.text}</a>`
+  ).join("")
+  + `<button class="tlacitko-nenapadne" onclick="odhlasit()">Odhlásit</button>`;
+}
+
+// Skripty se načítají na konci body, DOM hlavičky už existuje.
+// Menu musí být vykreslené dřív, než zkontrolujNeprectene() hledá
+// odkazy pro značky nepřečteného.
+vykresliClenskeMenu();
 
 // ---------- Zmenšení obrázku před nahráním ----------
 // Velké fotky zmenší a převede do úsporného JPG, aby se nezaplnilo
@@ -608,6 +644,9 @@ function zobrazToast(text, typ = "chyba") {
   if (!toast) {
     toast = document.createElement("div");
     toast.id = "toast";
+    // Čtečky obrazovky hlášku přečtou, i když se objeví mimo fokus
+    toast.setAttribute("role", "status");
+    toast.setAttribute("aria-live", "polite");
     document.body.appendChild(toast);
   }
   toast.className = "toast " + typ;

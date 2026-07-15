@@ -18,6 +18,11 @@ set /p msg=Kratky popis zmeny (nebo dejte Enter):
 if "%msg%"=="" set msg=Uprava webu %DATE%
 
 echo.
+echo [0/3] Kontrola verzi souboru...
+node zvednout-verzi.js --kontrola
+if errorlevel 1 goto verzefail
+
+echo.
 echo [1/3] Ukladam zmeny...
 %GIT% add -A
 %GIT% commit -m "%msg%"
@@ -38,6 +43,15 @@ echo Hotovo. Vse je nahrano. Web na GitHub Pages
 echo se obnovi behem 1-2 minut. Okno muzete zavrit.
 pause
 exit /b 0
+
+:verzefail
+echo.
+echo --------------------------------------------
+echo POZOR: Kontrola verzi souboru selhala (nebo neni
+echo dostupny prikaz node). NIC se nenahralo na GitHub.
+echo Napiste o tom Claudovi na pocitaci, pomuze to srovnat.
+pause
+exit /b 1
 
 :konflikt
 echo.

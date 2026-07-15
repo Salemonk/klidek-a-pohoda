@@ -17,14 +17,19 @@ async function spustStranku() {
   }
 
   pripravLfgTlacitko();
-  await nactiStavGuildy();
-  await nactiNejblizsiAkce();
   pripravUpravuStavu();
   pripravUpravuPrezdivky(session.user.id);
   pripravZmenuHesla();
-  await pripravSpravuAvataru(session.user.id);
-  await pripravPozvanky();
-  await pripravPrehledClenu();
+
+  // Panely jsou na sobě nezávislé, načítají se souběžně (rychlejší start);
+  // chyby si každý panel ošetřuje sám do svého místa na stránce
+  await Promise.all([
+    nactiStavGuildy(),
+    nactiNejblizsiAkce(),
+    pripravSpravuAvataru(session.user.id),
+    pripravPozvanky(),
+    pripravPrehledClenu(),
+  ]);
 }
 
 // ---------- Hledám hráče (LFG) ----------

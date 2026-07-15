@@ -285,15 +285,44 @@ node zvednout-verzi.js --kontrola    # jen ověří konzistenci verzí
 
 Názvy se zadávají bez přípony (styl, klient, chat, prispevky, ankety,
 akce, vyzvy, …). Skript najde nejvyšší číslo a všude nastaví o 1 vyšší;
-při překlepu vypíše známé názvy a nic nezmění.
+při překlepu vypíše známé názvy a nic nezmění. Při každém zvednutí verzí
+skript navíc zvedne i název cache v `sw.js` (`kap-cache-vN`), takže si
+prohlížeče členů po nasazení samy smažou starou PWA cache (activate
+handler v sw.js maže cache s jiným názvem) a nehromadí v ní zastaralé
+verzované soubory.
+
+`nahrat-na-github.bat` před commitem spouští `node zvednout-verzi.js
+--kontrola` a při nesouladu verzí (nebo chybějícím node) nasazení
+zastaví, nic se nenahraje.
+
+## Menu členských stránek (jedno místo)
+
+Odkazy v menu členských stránek se negenerují v HTML, ale v klient.js:
+konstanta `POLOZKY_MENU` + funkce `vykresliClenskeMenu()`, která se volá
+hned při načtení klient.js a vyplní `<nav class="menu" data-clenske>`
+(aktivní odkaz podle `location.pathname`). HTML stránek obsahuje jen
+prázdný `<nav>` s markerem. Veřejné stránky (index, prihlaseni,
+registrace, 404, ochrana-udaju) mají vlastní statická menu bez markeru
+a tahle logika se jich netýká. **Nová členská stránka = přidat řádek
+do POLOZKY_MENU**, žádné úpravy 7 HTML souborů.
+
+## Rychlost načítání
+
+Nezávislé databázové dotazy běží souběžně (`Promise.all`): profil +
+seznam členů ve všech `spustStranku()`, panely Přehledu (stav guildy,
+akce, avatar, pozvánky, členové) a všechny dotazy `zkontrolujNeprectene()`
+(sekce i tabulky uvnitř sekce). Závislosti zůstávají sekvenční (avatary
+potřebují profily, obsah potřebuje obojí).
 
 ## Jak přidat novou funkci (checklist)
 
 1. Tabulka/bucket + RLS policies do nového souboru v `supabase/`
    (spustit ručně v SQL Editoru, zapsat do NAVOD.md do seznamu skriptů).
 2. UI do příslušného HTML, logika do `js/<stranka>.js`, sdílené věci
-   do `klient.js`.
+   do `klient.js`. Nová členská stránka: řádek do `POLOZKY_MENU`
+   v klient.js (menu se generuje samo).
 3. Uživatelský obsah vždy přes `esc()`. Texty česky, bez pomlček.
+   Ikonová tlačítka bez textu dostávají `aria-label`.
 4. Zvednout `?v=` verze (`node zvednout-verzi.js <nazvy>`), otestovat
    lokálně, nasadit batem.
 

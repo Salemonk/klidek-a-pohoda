@@ -17,16 +17,7 @@
     <div class="obsah hlavicka-vnitrek">
       <a href="index.html" class="logo">🎮 Klídek <span>a pohoda</span></a>
       <button class="menu-prepinac" onclick="prepniMenu(this)" aria-label="Menu">☰</button>
-      <nav class="menu">
-        <a href="clenska-sekce.html">Přehled</a>
-        <a href="akce.html" class="aktivni">Akce</a>
-        <a href="chat.html">Chat</a>
-        <a href="prispevky.html">Příspěvky</a>
-        <a href="ankety.html">Ankety</a>
-        <a href="vyzvy.html">Výzvy</a>
-        <a href="galerie.html">Galerie</a>
-        <button class="tlacitko-nenapadne" onclick="odhlasit()">Odhlásit</button>
-      </nav>
+      <nav class="menu" data-clenske></nav>
     </div>
   </header>
 
@@ -81,8 +72,8 @@
 
   <script src="js/config.js?v=20"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/klient.js?v=25"></script>
-  <script src="js/akce.js?v=22"></script>
+  <script src="js/klient.js?v=26"></script>
+  <script src="js/akce.js?v=23"></script>
   <script src="js/pwa.js?v=1"></script>
 </body>
 </html>

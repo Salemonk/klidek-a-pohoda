@@ -19,8 +19,8 @@ async function spustStranku() {
 
   oznacSekciPrectenou("prispevky");
   mojeId = session.user.id;
-  mujProfil = await nactiMujProfil(mojeId);
-  profily = await nactiVsechnyProfily();
+  // Profil a seznam členů na sobě nezávisí, načtou se souběžně
+  [mujProfil, profily] = await Promise.all([nactiMujProfil(mojeId), nactiVsechnyProfily()]);
   avatary = await nactiAdresyAvataru(profily);
 
   pripravFormular();
@@ -265,7 +265,7 @@ function reakceHtml(prispevek) {
   }).join("");
 
   return `<div class="reakce-radek">${chipy}
-    <button class="reakce-pridat" title="Přidat reakci"
+    <button class="reakce-pridat" title="Přidat reakci" aria-label="Přidat reakci"
       onclick="otevriPanelReakci(${prispevek.id}, this)">😊+</button></div>`;
 }
 
@@ -341,7 +341,7 @@ function komentareHtml(prispevek) {
   // Formulář jen pro toho, kdo ještě komentář nemá
   const formular = mamKomentar ? "" : `
     <form class="komentar-formular" onsubmit="pridejKomentar(event, ${prispevek.id})">
-      <button type="button" class="emoji-tlacitko" title="Smajlíky"
+      <button type="button" class="emoji-tlacitko" title="Smajlíky" aria-label="Smajlíky"
         onclick="otevriPanelKomentare('koment-text-${prispevek.id}', this)">😊</button>
       <input type="text" id="koment-text-${prispevek.id}" maxlength="500"
         placeholder="Napiš komentář…" autocomplete="off" required>
@@ -378,7 +378,7 @@ function zacniUpravuKomentare(prispevekId) {
   const radek = document.getElementById(`komentar-${prispevekId}-${mojeId}`);
   radek.innerHTML = `
     <form class="komentar-formular" onsubmit="ulozUpravuKomentare(event, ${prispevekId})">
-      <button type="button" class="emoji-tlacitko" title="Smajlíky"
+      <button type="button" class="emoji-tlacitko" title="Smajlíky" aria-label="Smajlíky"
         onclick="otevriPanelKomentare('koment-uprava-${prispevekId}', this)">😊</button>
       <input type="text" id="koment-uprava-${prispevekId}" maxlength="500"
         autocomplete="off" required value="${esc(koment.text)}">

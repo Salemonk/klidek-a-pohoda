@@ -202,7 +202,7 @@ function zobrazVysledek() {
   obal.innerHTML = posledniVyber.map((polozka, index) => {
     const info = KATEGORIE_STRATAGEMU[polozka.kategorie];
     const reroll = posledniVyber.length > 1
-      ? `<button class="tlacitko-nenapadne vyzva-slot-reroll" onclick="rerollSlot(${index})" title="Přelosovat jen tenhle slot">↻</button>`
+      ? `<button class="tlacitko-nenapadne vyzva-slot-reroll" onclick="rerollSlot(${index})" title="Přelosovat jen tenhle slot" aria-label="Přelosovat slot">↻</button>`
       : "";
     return `
       <div class="vyzva-slot">

@@ -17,16 +17,7 @@
     <div class="obsah hlavicka-vnitrek">
       <a href="index.html" class="logo">🎮 Klídek <span>a pohoda</span></a>
       <button class="menu-prepinac" onclick="prepniMenu(this)" aria-label="Menu">☰</button>
-      <nav class="menu">
-        <a href="clenska-sekce.html">Přehled</a>
-        <a href="akce.html">Akce</a>
-        <a href="chat.html">Chat</a>
-        <a href="prispevky.html" class="aktivni">Příspěvky</a>
-        <a href="ankety.html">Ankety</a>
-        <a href="vyzvy.html">Výzvy</a>
-        <a href="galerie.html">Galerie</a>
-        <button class="tlacitko-nenapadne" onclick="odhlasit()">Odhlásit</button>
-      </nav>
+      <nav class="menu" data-clenske></nav>
     </div>
   </header>
 
@@ -50,7 +41,7 @@
           <div id="emoji-panel-prispevek" class="emoji-panel" hidden></div>
           <textarea id="text-prispevku" rows="6" required></textarea>
           <p class="napoveda-formatovani">
-            <button type="button" id="emoji-tlacitko-prispevek" class="emoji-tlacitko" title="Smajlíky">😊</button>
+            <button type="button" id="emoji-tlacitko-prispevek" class="emoji-tlacitko" title="Smajlíky" aria-label="Smajlíky">😊</button>
             Formátování: <strong>**tučně**</strong>, <em>*kurzíva*</em>,
             řádek začínající „- “ vytvoří odrážku.
           </p>
@@ -82,8 +73,8 @@
 
   <script src="js/config.js?v=20"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/klient.js?v=25"></script>
-  <script src="js/prispevky.js?v=25"></script>
+  <script src="js/klient.js?v=26"></script>
+  <script src="js/prispevky.js?v=26"></script>
   <script src="js/pwa.js?v=1"></script>
 </body>
 </html>
