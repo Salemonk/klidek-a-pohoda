@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#12141c">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="stylesheet" href="css/styl.css?v=31">
+  <link rel="stylesheet" href="css/styl.css?v=32">
 </head>
 <body>
 
@@ -36,8 +36,10 @@
 
       <div class="panel-blok lfg-panel">
         <h2><span class="ikona">🎮</span>Hledáš parťáky hned teď?</h2>
-        <p class="poznamka" style="margin-top:0;">Klikni a do Discordu (#hledám-partu) přiletí
-        zpráva pro celou roli @Hledám hráče. Napiš si, co chceš hrát, přímo do věty:</p>
+        <p class="poznamka" style="margin-top:0;">Klikni a do Discordu
+        <span class="jen-desktop">(#hledám-partu) </span>přiletí zpráva pro
+        <span class="jen-desktop">celou </span>roli @Hledám hráče.
+        Co chceš hrát, napiš přímo do věty:</p>
 
         <div class="lfg-sablona">
           🎮 <strong id="lfg-jmeno">Ty</strong> hledá partu
@@ -65,20 +67,20 @@
       <div class="panel-blok">
         <h2><span class="ikona">📅</span>Nejbližší akce</h2>
         <div id="nejblizsi-akce"><div class="skeleton-radek stredni"></div></div>
-        <p style="margin-top:12px;"><a href="akce.html">Všechny akce a hlasování o účasti →</a></p>
+        <p style="margin-top:12px;"><a href="akce.html">Všechny akce<span class="jen-desktop"> a hlasování o účasti</span> →</a></p>
       </div>
 
       <div class="panel-blok">
         <h2><span class="ikona">👤</span>Můj profil</h2>
         <form id="formular-prezdivka">
-          <label for="prezdivka">Přezdívka (uvidí ji ostatní v chatu a u příspěvků)</label>
+          <label for="prezdivka">Přezdívka <span class="jen-desktop">(uvidí ji ostatní v chatu a u příspěvků)</span></label>
           <input type="text" id="prezdivka" maxlength="30" required>
           <div id="uspech-profil" class="uspech"></div>
           <button type="submit" class="tlacitko tlacitko-male">Uložit přezdívku</button>
         </form>
 
         <form id="formular-avatar" style="margin-top: 20px;">
-          <label for="avatar-soubor">Avatar (ořízne se na čtverec a zmenší automaticky)</label>
+          <label for="avatar-soubor">Avatar <span class="jen-desktop">(ořízne se na čtverec a zmenší automaticky)</span></label>
           <div class="avatar-radek">
             <span id="avatar-nahled"></span>
             <input type="file" id="avatar-soubor" accept="image/*">
@@ -129,8 +131,8 @@
 
   <script src="js/config.js?v=20"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/klient.js?v=24"></script>
-  <script src="js/clenska-sekce.js?v=21"></script>
+  <script src="js/klient.js?v=25"></script>
+  <script src="js/clenska-sekce.js?v=22"></script>
   <script src="js/pwa.js?v=1"></script>
 </body>
 </html>

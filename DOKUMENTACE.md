@@ -79,7 +79,9 @@ pokud má návštěvník v localStorage uložený přihlašovací token
 - `linkujOdkazy(escapovanyText)` z http(s) URL v už escapovaném textu udělá
   `<a target=_blank rel=noopener>`. Pracuje VÝHRADNĚ na výstupu z esc()
   (bezpečné proti XSS), povoluje jen http/https (ne javascript:). Používá
-  ho formatujText (příspěvky) i chat.js (zprávy).
+  ho formatujText (příspěvky) i chat.js (zprávy). Adresy delší než 45 znaků
+  se ZOBRAZÍ zkrácené (bez protokolu, začátek + …), href zůstává celý;
+  ořez hlídá nedokončené HTML entity (& je po esc() &amp;).
 - `formatujDatum`, `formatujCasChatu` české formátování dat.
 - Smajlíky (nabídka v konstantě `ZAKLADNI_EMOJI`):
   `pripravEmojiVyber(tlacitkoId, panelId, poleId)` pro statický panel
@@ -93,6 +95,11 @@ pokud má návštěvník v localStorage uložený přihlašovací token
   členských stránek; na desktopu je ☰ skryté přes CSS). Když je ve složeném
   menu nějaká značka nepřečteného, `nastavZnacku()` rozsvítí na ☰ oranžovou
   tečku (`.ma-neprectene`).
+- CSS utilita `.jen-desktop` (styl.css): obsah se na mobilu (≤600 px) skryje.
+  Používá se na delší vysvětlivky v HTML (popisky polí profilu, LFG věta,
+  odkaz na akce), které by na úzké obrazovce zabíraly moc řádků. Podobně se
+  na mobilu skrývá štítek kategorie ve výsledku randomizeru
+  (`.vyzva-slot .stitek`), kategorii tam sděluje emoji.
 - `ziskejPodepsaneAdresy(bucket, cesty)` vrátí `{cesta: adresa}` pro soubory
   v privátním bucketu. **Úspora přenosu:** podepsané adresy (platné 1 h)
   se ukládají do localStorage (`kap-pamet-adres`, prefix kvůli sdílenému

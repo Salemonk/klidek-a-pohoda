@@ -45,7 +45,7 @@ function pripravLfgTlacitko() {
     const co = pole.value.trim();
     const zavorka = co ? ` (${co})` : "";
     nahled.textContent =
-      `Přesně takhle to přiletí do Discordu: 🎮 ${prezdivka} hledá partu${zavorka}, kdo má teď čas? @Hledám hráče`;
+      `Náhled: 🎮 ${prezdivka} hledá partu${zavorka}, kdo má teď čas? @Hledám hráče`;
   }
   pole.addEventListener("input", aktualizujNahled);
   aktualizujNahled();
@@ -395,8 +395,8 @@ async function nactiPrehledClenu() {
         <div class="clen-info">
           <strong>${esc(clen.prezdivka)}</strong>
           <span class="poznamka-mala">${esc(clen.email)}
-            · členem od ${formatujDatumKratce(clen.clenem_od)}
-            · naposledy přihlášen ${clen.posledni_prihlaseni ? formatujDatumKratce(clen.posledni_prihlaseni) : "nikdy"}</span>
+            · od ${formatujDatumKratce(clen.clenem_od)}
+            · naposledy ${clen.posledni_prihlaseni ? formatujDatumKratce(clen.posledni_prihlaseni) : "nikdy"}</span>
         </div>
         ${volbaRole}
       </div>`;

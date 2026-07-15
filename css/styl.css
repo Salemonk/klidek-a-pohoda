@@ -1190,4 +1190,12 @@ select.volba-role {
     border-top: 1px solid var(--ohraniceni);
     text-align: left;
   }
+
+  /* Delší vysvětlivky, které se na úzké obrazovce nevejdou:
+     obsah zabalený do .jen-desktop se na mobilu schová */
+  .jen-desktop { display: none; }
+
+  /* Výsledek randomizeru: kategorii sděluje emoji, štítek s dlouhým
+     názvem kategorie na mobilu zabíral i 4 řádky */
+  .vyzva-slot .stitek { display: none; }
 }

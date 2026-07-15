@@ -510,13 +510,22 @@ function esc(text) {
 // Z odkazů (http/https) v už OŠETŘENÉM textu udělá klikací odkazy.
 // Pracuje výhradně na výstupu z esc(), takže se nedá zneužít k podstrčení
 // kódu; povolené jsou jen adresy http(s), nikdy třeba "javascript:".
+// Dlouhé adresy se ZOBRAZÍ zkrácené (bez protokolu, začátek + …),
+// odkaz ale vede vždy na celou adresu.
 function linkujOdkazy(escapovanyText) {
   return escapovanyText.replace(/https?:\/\/[^\s<]+/g, (nalez) => {
     // Koncovou interpunkci (. , ! ? ) …) necháme mimo odkaz
     const m = nalez.match(/^(.*?)([.,!?;:)]*)$/);
     const adresa = m[1];
     const konec = m[2];
-    return `<a href="${adresa}" target="_blank" rel="noopener">${adresa}</a>${konec}`;
+
+    let text = adresa;
+    if (adresa.length > 45) {
+      // Ořez může trefit doprostřed HTML entity (text prošel přes esc(),
+      // takže & je &amp;) — nedokončený zbytek entity na konci odstraníme
+      text = adresa.replace(/^https?:\/\//, "").slice(0, 42).replace(/&[^;&]*$/, "") + "…";
+    }
+    return `<a href="${adresa}" target="_blank" rel="noopener">${text}</a>${konec}`;
   });
 }
 
