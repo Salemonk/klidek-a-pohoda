@@ -81,6 +81,8 @@ function pripravFormular() {
 
     // Když je přiložený obrázek, nejdřív ho zmenšíme a nahrajeme
     let cestaObrazku = null;
+    let sirkaObrazku = null;
+    let vyskaObrazku = null;
     if (soubor) {
       if (!soubor.type.startsWith("image/")) {
         zobrazHlasku(chyba, "Přiložený soubor není obrázek.");
@@ -90,6 +92,8 @@ function pripravFormular() {
       }
       try {
         const zmenseny = await zmensiObrazek(soubor);
+        sirkaObrazku = zmenseny.sirka;
+        vyskaObrazku = zmenseny.vyska;
         cestaObrazku = `${mojeId}/${Date.now()}.jpg`;
         const { error: chybaNahrani } = await sb.storage
           .from(ULOZISTE)
@@ -108,6 +112,8 @@ function pripravFormular() {
       nadpis: nadpis,
       text: text,
       obrazek: cestaObrazku,
+      sirka_obrazku: sirkaObrazku,
+      vyska_obrazku: vyskaObrazku,
     });
 
     tlacitko.disabled = false;
@@ -139,7 +145,7 @@ async function nactiPrispevky() {
   // O jeden navíc, abychom poznali, jestli existují ještě starší příspěvky
   const { data, error } = await sb
     .from("prispevky")
-    .select("id, autor, nadpis, text, obrazek, pripnuto, vytvoreno, upraveno, reakce(clen_id, emoji), komentare(clen_id, text, vytvoreno, upraveno)")
+    .select("id, autor, nadpis, text, obrazek, sirka_obrazku, vyska_obrazku, pripnuto, vytvoreno, upraveno, reakce(clen_id, emoji), komentare(clen_id, text, vytvoreno, upraveno)")
     .order("pripnuto", { ascending: false })
     .order("vytvoreno", { ascending: false })
     .limit(zobrazenoPrispevku + 1);
@@ -192,7 +198,9 @@ async function nactiPrispevky() {
         </div>
         <div class="prispevek-text">${formatujText(prispevek.text)}</div>
         ${adresa ? `<a href="${adresa}" target="_blank" title="Otevřít v plné velikosti">
-          <img class="prispevek-obrazek" src="${adresa}" alt="Obrázek k příspěvku" loading="lazy"></a>` : ""}
+          <img class="prispevek-obrazek" src="${adresa}" alt="Obrázek k příspěvku" loading="lazy"${
+            prispevek.sirka_obrazku ? ` width="${prispevek.sirka_obrazku}" height="${prispevek.vyska_obrazku}"` : ""
+          }></a>` : ""}
         ${reakceHtml(prispevek)}
         ${komentareHtml(prispevek)}
       </article>`;

@@ -27,6 +27,7 @@ Frontend s ní komunikuje knihovnou `supabase-js` v2 načítanou z CDN jsdelivr.
 index.html            veřejná stránka (jediná pro nepřihlášené + ochrana-udaju)
 ochrana-udaju.html    zásady ochrany osobních údajů (GDPR), veřejná
 404.html              chybová stránka (GitHub Pages ji servíruje automaticky)
+CNAME                  vlastní doména pro GitHub Pages (klidekpohoda.cz)
 manifest.json          PWA manifest (ikona na ploše mobilu, název, barvy)
 sw.js                  service worker (cache statických souborů, offline)
 js/pwa.js              registrace service workeru (načteno na všech stránkách)
@@ -127,7 +128,7 @@ Základ vytváří `supabase/schema.sql`, rozšíření mají vlastní skripty.
 | `akce`      | název, popis, `datum` (timestamptz), autor | mazat smí autor nebo admin |
 | `ucast`     | hlasování `jdu`/`mozna`/`nejdu` | PK (akce, člen), upsert |
 | `zpravy`    | chat | realtime publikace `supabase_realtime`; kanál „chat“ v chat.js kombinuje postgres_changes (nové/smazané zprávy) a Presence (online členové: klíč = id člena, `track()` po připojení, event `sync` překresluje řádek nad chatem; bez tabulky a SQL) |
-| `prispevky` | nadpis, text, `obrazek` (cesta v bucketu), `pripnuto` | řazení `pripnuto desc, vytvoreno desc`; připíná/odepíná jen vedení nebo admin (`je_vedeni()`); skript `pripnute-prispevky.sql` |
+| `prispevky` | nadpis, text, `obrazek` (cesta v bucketu), `sirka_obrazku`/`vyska_obrazku`, `pripnuto` | řazení `pripnuto desc, vytvoreno desc`; připíná/odepíná jen vedení nebo admin (`je_vedeni()`); skript `pripnute-prispevky.sql`. Rozměry (skript `rozmery-obrazku-prispevku.sql`) jdou jako `width`/`height` na `<img>`, ať prohlížeč vyhradí místo dřív, než se obrázek stáhne (proti poskočení stránky); u starších příspěvků bez rozměrů se atributy vynechají, chování beze změny |
 | `reakce`    | emoji reakce na příspěvky | PK (příspěvek, člen, emoji) |
 | `komentare` | komentáře k příspěvkům (text + emoji, bez obrázků) | PK (příspěvek, člen) = **jeden komentář na člena**, vynuceno databází; autor upraví/smaže svůj, vedení maže cizí; skript `komentare.sql` |
 | `momentky`  | volná galerie: `obrazek` (cesta v bucketu `galerie`), nepovinný `popisek` | žádná vazba na konkrétní akci; nahraje kdokoli, maže autor nebo vedení; skript `galerie.sql` |

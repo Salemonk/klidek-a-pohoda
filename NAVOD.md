@@ -243,6 +243,9 @@ databázi doporučujeme čas od času ručně stáhnout přes SQL Editor.
   komentář na člena a příspěvek). Vyžaduje běžící `role-vedeni-a-upravy.sql`.
 - `supabase/pripnute-prispevky.sql`: připínání příspěvků na nástěnce
   (jen vedení a admin). Vyžaduje běžící `role-vedeni-a-upravy.sql`.
+- `supabase/rozmery-obrazku-prispevku.sql`: uloží rozměry obrázku
+  u nových příspěvků, ať se stránka při načítání neposkočí. Bez
+  závislostí, jde spustit kdykoli.
 - `supabase/galerie.sql`: galerie momentek (stránka Galerie), volná
   bez vazby na konkrétní akci. Vyžaduje běžící `role-vedeni-a-upravy.sql`.
 

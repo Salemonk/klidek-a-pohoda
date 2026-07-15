@@ -1,0 +1,17 @@
+ankety.sql
+automaticky-uklid.sql
+avatary.sql
+discord-upozorneni.sql
+galerie.sql
+hledam-hrace.sql
+komentare.sql
+obrazky-prispevku.sql
+odpovedi-chat.sql
+pozvanky.sql
+prehled-clenu.sql
+pripnute-prispevky.sql
+pripominky-akci.sql
+reakce.sql
+role-vedeni-a-upravy.sql
+schema.sql
+vyzvy-discord.sql

@@ -510,7 +510,14 @@ async function zmensiObrazek(soubor, maxRozmer = 1600) {
   kreslitko.drawImage(bitmapa, 0, 0, sirka, vyska);
   bitmapa.close(); // uvolní paměť
 
-  return new Promise((hotovo) => platno.toBlob(hotovo, "image/jpeg", 0.85));
+  // Rozměry přibalíme přímo na Blob (výsledek), ať je má volající po ruce
+  // pro width/height u <img> — prohlížeč pak obrázku rovnou vyhradí
+  // správné místo a stránka při načítání neposkočí.
+  return new Promise((hotovo) => platno.toBlob((blob) => {
+    blob.sirka = sirka;
+    blob.vyska = vyska;
+    hotovo(blob);
+  }, "image/jpeg", 0.85));
 }
 
 // Ořízne obrázek na čtverec (střed) a zmenší, pro avatary
