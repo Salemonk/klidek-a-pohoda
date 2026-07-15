@@ -48,8 +48,9 @@ js/klient.js          sdílený kód (viz níže)
 js/verejna.js         logika veřejných stránek
 js/stratagemy-data.js statická data pro randomizer stratagemů (viz sekce Výzvy)
 js/<stranka>.js       logika jednotlivých členských stránek
-assets/               obrázky webu (přípona -web = zmenšené JPG); favicon i ikonka appky
-                       jsou stejný obrázek lenochoda (icon-192.png)
+assets/favicon.svg    ikonka v záložce prohlížeče, textové logo "K&P"
+assets/               ostatní obrázky webu (přípona -web = zmenšené JPG);
+                       appka na ploše má vlastní ikonku s lenochodem (icon-192.png)
 assets/fonts/         Nunito (woff2, hostováno lokálně kvůli GDPR, ne Google Fonts)
 supabase/*.sql        skripty pro založení databáze (spouští se ručně, jednou)
 NAVOD.md              provozní návod pro správce (ne-programátora)
