@@ -56,7 +56,7 @@ begin
       '📅 **Nová akce: ' || new.nazev || '**' || chr(10)
       || 'Kdy: <t:' || extract(epoch from new.datum)::bigint || ':F>' || chr(10)
       || 'Naplánoval(a): ' || coalesce(jmeno, '?') || chr(10)
-      || 'Hlasujte o účasti: https://salemonk.github.io/klidek-a-pohoda/akce.html'
+      || 'Hlasujte o účasti: https://klidekpohoda.cz/akce.html'
     )
   );
   return new;
@@ -92,7 +92,7 @@ begin
       'content',
       '📝 **Nový příspěvek na nástěnce: ' || new.nadpis || '**' || chr(10)
       || 'Napsal(a): ' || coalesce(jmeno, '?') || chr(10)
-      || 'Přečtěte si ho: https://salemonk.github.io/klidek-a-pohoda/prispevky.html'
+      || 'Přečtěte si ho: https://klidekpohoda.cz/prispevky.html'
     )
   );
   return new;

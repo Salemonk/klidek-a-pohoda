@@ -61,7 +61,7 @@ begin
         || 'Kdy: <t:' || epoch || ':F> (<t:' || epoch || ':R>)' || chr(10)
         || 'Zapsáno: ' || pocet_jdu
         || case when pocet_jdu > 0 then ' (' || jmena || ')' else '' end || chr(10)
-        || 'Hlasování: https://salemonk.github.io/klidek-a-pohoda/akce.html'
+        || 'Hlasování: https://klidekpohoda.cz/akce.html'
       )
     );
     update akce set pripomenuto_den = now() where id = a.id;

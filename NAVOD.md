@@ -146,7 +146,7 @@ nepodívá (guilda se pak "probouzí" o pár vteřin déle). Bezplatná služba
 2. Klikněte na **Add New Monitor**:
    - **Monitor Type:** HTTP(s)
    - **Friendly Name:** např. `Klídek a pohoda — web`
-   - **URL:** adresa vašeho webu (např. `https://salemonk.github.io/klidek-a-pohoda/`)
+   - **URL:** adresa vašeho webu (např. `https://klidekpohoda.cz/`)
    - **Monitoring Interval:** 5 minut
    - Uložit.
 3. Klikněte znovu na **Add New Monitor** a přidejte druhý, tentokrát
