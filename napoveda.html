@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nápověda | Klídek a pohoda gaming</title>
+  <link rel="icon" type="image/png" href="assets/icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#12141c">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="css/styl.css?v=34">
+</head>
+<body>
+
+  <header class="hlavicka">
+    <div class="obsah hlavicka-vnitrek">
+      <a href="index.html" class="logo">🎮 Klídek <span>a pohoda</span></a>
+      <button class="menu-prepinac" onclick="prepniMenu(this)" aria-label="Menu" aria-expanded="false">☰</button>
+      <nav class="menu" data-clenske></nav>
+    </div>
+  </header>
+
+  <main class="clenska-stranka">
+    <div class="obsah">
+      <h1>🦥 Nápověda</h1>
+      <p class="poznamka" style="margin-top:-8px; margin-bottom: 20px;">
+        Vítej na webu guildy! Tady je rychlý průvodce, co kde najdeš
+        a jak to funguje.</p>
+
+      <div class="panel-blok">
+        <h2><span class="ikona">🗺️</span>Co kde najdeš</h2>
+
+        <div class="napoveda-sekce">
+          <span class="napoveda-emoji">📢</span>
+          <div><strong>Přehled</strong><br>
+          Stav guildy, nejbližší akce a tvůj profil (přezdívka, avatar,
+          změna hesla). Je tu i tlačítko Hledám hráče: kliknutím pošleš
+          zprávu na Discord a svoláš partu.</div>
+        </div>
+
+        <div class="napoveda-sekce">
+          <span class="napoveda-emoji">📅</span>
+          <div><strong>Akce</strong><br>
+          Plánované herní večery. Hlasuješ o účasti (jdu, možná, nejdu),
+          akci si můžeš přidat do kalendáře v telefonu. Připomínky chodí
+          samy na Discord den a hodinu předem.</div>
+        </div>
+
+        <div class="napoveda-sekce">
+          <span class="napoveda-emoji">💬</span>
+          <div><strong>Chat</strong><br>
+          Společný pokec. Na zprávu jde odpovědět (↩), vkládat smajlíky,
+          starší historie se načte tlačítkem nahoře. Vidíš i kdo je
+          zrovna online.</div>
+        </div>
+
+        <div class="napoveda-sekce">
+          <span class="napoveda-emoji">📝</span>
+          <div><strong>Příspěvky</strong><br>
+          Nástěnka guildy. Text jde formátovat (**tučně**, *kurzíva*,
+          odrážky pomlčkou na začátku řádku), obrázek přiložíš souborem
+          nebo rovnou Ctrl+V ze schránky. Reaguje se smajlíky, ke každému
+          příspěvku můžeš napsat jeden komentář. Důležité příspěvky
+          vedení připne nahoru (📌).</div>
+        </div>
+
+        <div class="napoveda-sekce">
+          <span class="napoveda-emoji">📊</span>
+          <div><strong>Ankety</strong><br>
+          Hlasování typu „co budeme hrát". Máš jeden hlas na anketu
+          a můžeš ho kdykoli změnit.</div>
+        </div>
+
+        <div class="napoveda-sekce">
+          <span class="napoveda-emoji">🎲</span>
+          <div><strong>Výzvy</strong><br>
+          Randomizer stratagemů pro Helldivers 2. Vylosuješ si jeden
+          stratagem nebo celý loadout a výzvu pošleš partě do Discordu.
+          Pro všechny, kdo chtějí hru trochu ztížit.</div>
+        </div>
+
+        <div class="napoveda-sekce">
+          <span class="napoveda-emoji">🖼️</span>
+          <div><strong>Galerie</strong><br>
+          Síň slávy: screenshoty z našich akcí. Nahrát může kdokoli,
+          klidně s popiskem.</div>
+        </div>
+      </div>
+
+      <div class="panel-blok">
+        <h2><span class="ikona">🔔</span>Oranžové značky v menu</h2>
+        <p>Číslo u položky menu říká, kolik nového tam od tvé poslední
+        návštěvy přibylo. Návštěvou sekce značka zmizí. Vlastní příspěvky
+        a zprávy se ti nepočítají.</p>
+      </div>
+
+      <div class="panel-blok">
+        <h2><span class="ikona">📱</span>Web jako appka na ploše</h2>
+        <p>Web si můžeš přidat na plochu telefonu, otevírá se pak jako
+        aplikace přes celou obrazovku:</p>
+        <p><strong>Android (Chrome i Firefox):</strong> tři tečky vpravo
+        nahoře, pak „Přidat na plochu" nebo „Instalovat".<br>
+        <strong>Android (Opera):</strong> tři tečky nebo ikona O, pak
+        „Přidat na úvodní obrazovku".<br>
+        <strong>iPhone:</strong> otevři web v Safari (musí být Safari),
+        ikona Sdílet dole uprostřed, pak „Přidat na plochu".</p>
+      </div>
+
+      <div class="panel-blok">
+        <h2><span class="ikona">🛠️</span>Něco nefunguje?</h2>
+        <p>Našel jsi chybu, nebo máš nápad na vylepšení? Napiš hlavnímu
+        lenochodovi na Discord. V klidu a pohodě to vyřešíme. 🦥</p>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="js/config.js?v=20"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/klient.js?v=27"></script>
+  <script src="js/napoveda.js?v=1"></script>
+  <script src="js/pwa.js?v=1"></script>
+</body>
+</html>

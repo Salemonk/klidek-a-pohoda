@@ -40,6 +40,8 @@ chat.html             společný chat (realtime)
 prispevky.html        nástěnka: příspěvky s obrázky a reakcemi
 vyzvy.html            randomizer stratagemů Helldivers 2 (viz sekce Výzvy)
 galerie.html          galerie momentek: volná síň slávy se screenshoty
+napoveda.html         nápověda pro nové členy (statická, odkaz z Přehledu,
+                      není v menu; js/napoveda.js jen ověří přihlášení)
 css/styl.css          jediný stylový soubor, barvy přes CSS proměnné v :root
 js/config.js          KONFIG: Supabase URL, veřejný klíč, Discord pozvánka
 js/klient.js          sdílený kód (viz níže)

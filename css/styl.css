@@ -454,6 +454,18 @@ textarea { resize: vertical; min-height: 100px; }
   margin-right: 8px;
 }
 
+/* ---------- Nápověda pro nové členy ---------- */
+
+.napoveda-sekce {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.napoveda-sekce:last-child { margin-bottom: 0; }
+.napoveda-emoji { font-size: 1.5rem; line-height: 1.3; flex-shrink: 0; }
+.napoveda-sekce strong { color: var(--akcent); }
+
 .vyzva-rozbalit summary {
   cursor: pointer;
   font-weight: 700;

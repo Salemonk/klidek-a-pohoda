@@ -10,7 +10,7 @@
 //     jen když se to nepovede (offline), vezmou se z cache.
 // ============================================================
 
-const CACHE_NAZEV = "kap-cache-v4";
+const CACHE_NAZEV = "kap-cache-v5";
 
 self.addEventListener("install", () => {
   self.skipWaiting();
