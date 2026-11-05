@@ -56,6 +56,7 @@ supabase/*.sql        skripty pro založení databáze (spouští se ručně, je
 NAVOD.md              provozní návod pro správce (ne-programátora)
 nahrat-na-github.bat  nasazení jedním poklepáním
 zvednout-verzi.js     vývojářský skript na bump ?v= verzí (viz Cache a verzování)
+GRAFIKA.md            přehled barev, písma a stylu ilustrací pro tvorbu nové grafiky
 ```
 
 Každá stránka načítá skripty v pořadí: `config.js` → CDN `supabase-js` →
