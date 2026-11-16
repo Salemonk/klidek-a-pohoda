@@ -1228,6 +1228,13 @@ input[type="number"] {
 .deskovky #hledat-hru { width: 100%; }
 
 .deskovky #kalendar, .deskovky #hry, .deskovky #sprava { scroll-margin-top: 80px; }
+/* .menu má display:flex, které by atribut hidden přebilo */
+.deskovky [hidden] { display: none !important; }
+.dk-brana { max-width: 460px; margin: 40px auto; text-align: center; }
+.dk-brana h1 { margin-bottom: 0.6rem; }
+.dk-brana form { text-align: left; margin-top: 1.2rem; }
+.dk-brana button { width: 100%; }
+input[type="password"]#heslo-brany { text-align: center; }
 .dk-uvod { color: var(--text-tlumeny); margin: -0.6rem 0 1.4rem; max-width: 640px; }
 .dk-dva-sloupce { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
 .dk-tlacitka { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 12px; }

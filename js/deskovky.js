@@ -21,7 +21,8 @@ let hryMapa = {};        // id -> hra
 let akce = [];           // všechna hraní včetně přihlášek
 let upravovanaAkceId = null;
 let vybraneHry = new Set(); // výběr her ve formuláři správy
-let vyzadujeHeslo = false;  // je nastavené skupinové heslo?
+let vyzadujeHeslo = false;  // je nastavené skupinové heslo? (jen pro panel správy)
+let jeClen = false;         // přihlášený člen guildy: čte data přímo, heslo nezadává
 
 const HLASKY_CHYB = {
   neplatny_kod: "Něco se pokazilo s prohlížečem. Zkus obnovit stránku.",
@@ -32,7 +33,7 @@ const HLASKY_CHYB = {
   jmeno_obsazeno: "Někdo s tímhle jménem už je přihlášený. Přidej třeba příjmení nebo iniciálu.",
   zkuste_pozdeji: "Teď se přihlašuje moc lidí najednou. Zkus to za pár minut.",
   nenalezeno: "Přihlášku se nepodařilo najít, možná ji smazal správce.",
-  spatne_heslo: "Heslo skupiny nesedí. Zeptej se ostatních ve skupině.",
+  spatne_heslo: "Heslo skupiny se mezitím změnilo. Zadej prosím nové.",
 };
 
 function prelozChybu(chyba) {
@@ -131,31 +132,96 @@ function vysledkyHlasovani(a) {
 
 // ---------- Načtení dat ----------
 
+function nastavHry(data) {
+  hry = data.sort((a, b) => a.nazev.localeCompare(b.nazev, "cs"));
+  hryMapa = Object.fromEntries(hry.map((h) => [h.id, h]));
+}
+
+function nastavAkce(data) {
+  akce = data.sort((x, y) => x.datum.localeCompare(y.datum));
+  akce.forEach((a) => a.deskovky_prihlasky.sort((x, y) => x.vytvoreno.localeCompare(y.vytvoreno)));
+}
+
 async function nactiHry() {
   const { data, error } = await sb
     .from("deskovky_hry")
     .select("id, nazev, rok, obrazek, odkaz");
   if (error) throw error;
-  hry = data.sort((a, b) => a.nazev.localeCompare(b.nazev, "cs"));
-  hryMapa = Object.fromEntries(hry.map((h) => [h.id, h]));
+  nastavHry(data);
 }
 
-async function nactiAkce() {
-  const { data, error } = await sb
-    .from("deskovky_akce")
-    .select("id, nazev, datum, misto, popis, kapacita, deskovky_akce_hry(hra_id), deskovky_prihlasky(id, jmeno, vytvoreno, deskovky_hlasy(hra_id))")
-    .order("datum");
+// Člen guildy čte tabulky přímo (RLS to authenticated). Návštěvník bez účtu
+// dostane všechno najednou z funkce deskovky_data, která ověří heslo skupiny.
+async function nactiData() {
+  if (jeClen) {
+    const [vysledekHer, vysledekAkci] = await Promise.all([
+      sb.from("deskovky_hry").select("id, nazev, rok, obrazek, odkaz"),
+      sb.from("deskovky_akce")
+        .select("id, nazev, datum, misto, popis, kapacita, deskovky_akce_hry(hra_id), deskovky_prihlasky(id, jmeno, vytvoreno, deskovky_hlasy(hra_id))"),
+    ]);
+    if (vysledekHer.error) throw vysledekHer.error;
+    if (vysledekAkci.error) throw vysledekAkci.error;
+    nastavHry(vysledekHer.data);
+    nastavAkce(vysledekAkci.data);
+    return;
+  }
+  const { data, error } = await sb.rpc("deskovky_data", { p_heslo: ulozeneHeslo() || null });
   if (error) throw error;
-  akce = data;
-  akce.forEach((a) => a.deskovky_prihlasky.sort((x, y) => x.vytvoreno.localeCompare(y.vytvoreno)));
+  nastavHry(data.hry);
+  nastavAkce(data.akce);
+}
+
+function jeChybaHesla(chyba) {
+  return String((chyba && chyba.message) || "").includes("spatne_heslo");
 }
 
 async function obnov() {
   try {
-    await nactiAkce();
+    await nactiData();
     vykresliAkce();
   } catch (e) {
+    if (jeChybaHesla(e)) { ulozHeslo(""); zobrazBranu(HLASKY_CHYB.spatne_heslo); return; }
     zobrazToast("Nepodařilo se načíst kalendář. Zkus obnovit stránku.");
+  }
+}
+
+// ---------- Vstup s heslem ----------
+
+function zobrazBranu(hlaska) {
+  document.getElementById("obsah-sekce").hidden = true;
+  document.getElementById("menu-sekce").hidden = true;
+  document.getElementById("brana").hidden = false;
+  const chyba = document.getElementById("chyba-brany");
+  if (hlaska) zobrazHlasku(chyba, hlaska); else skryjHlasku(chyba);
+  document.getElementById("heslo-brany").focus();
+}
+
+function zobrazObsah() {
+  document.getElementById("brana").hidden = true;
+  document.getElementById("obsah-sekce").hidden = false;
+  document.getElementById("menu-sekce").hidden = false;
+  vykresliAkce();
+  vykresliHry();
+  if (jeAdmin) vykresliVyberHer();
+}
+
+async function odemkni(udalost) {
+  udalost.preventDefault();
+  const pole = document.getElementById("heslo-brany");
+  const tlacitko = udalost.target.querySelector("button[type=submit]");
+  ulozHeslo(pole.value.trim());
+  tlacitko.disabled = true;
+  try {
+    await nactiData();
+    pole.value = "";
+    zobrazObsah();
+  } catch (e) {
+    ulozHeslo("");
+    zobrazBranu(jeChybaHesla(e)
+      ? "Tohle heslo nesedí. Zeptej se ostatních ve skupině."
+      : "Nepodařilo se spojit s databází. Zkus to za chvíli znovu.");
+  } finally {
+    tlacitko.disabled = false;
   }
 }
 
@@ -304,10 +370,7 @@ function otevriFormular(id) {
       ${mojePrihlaska ? "" : `
         <label for="jmeno-${a.id}">Tvoje jméno nebo přezdívka</label>
         <input type="text" id="jmeno-${a.id}" name="jmeno" minlength="2" maxlength="40" required autocomplete="nickname">
-        ${vyzadujeHeslo && !ulozeneHeslo() ? `
-          <label for="heslo-${a.id}">Heslo skupiny</label>
-          <input type="text" id="heslo-${a.id}" name="heslo" maxlength="100" required autocomplete="off"
-                 placeholder="Najdeš ho ve skupině">` : ""}
+
         <div class="dk-past" aria-hidden="true">
           <label>Tohle pole nevyplňuj <input type="text" name="web" tabindex="-1" autocomplete="off"></label>
         </div>`}
@@ -359,29 +422,19 @@ async function odesliPrihlasku(udalost, idAkce) {
     }));
   } else {
     const kod = novyTajnyKod();
-    const heslo = formular.heslo ? formular.heslo.value.trim() : ulozeneHeslo();
     const vysledek = await sb.rpc("deskovky_prihlasit", {
-      p_akce: idAkce, p_jmeno: formular.jmeno.value, p_hry: vybrane, p_kod: kod, p_heslo: heslo || null,
+      p_akce: idAkce, p_jmeno: formular.jmeno.value, p_hry: vybrane, p_kod: kod,
+      p_heslo: ulozeneHeslo() || null,
     });
     error = vysledek.error;
     if (!error) {
       moje[vysledek.data] = kod;
       ulozMojePrihlasky(moje);
-      if (vyzadujeHeslo) ulozHeslo(heslo);
-    } else if (String(error.message).includes("spatne_heslo") && !formular.heslo) {
-      // Zapamatované heslo už neplatí (správce ho změnil): zeptáme se znovu
-      ulozHeslo("");
-      vyzadujeHeslo = true;
+    } else if (jeChybaHesla(error)) {
+      // Správce mezitím heslo změnil: zpátky na vstup
       tlacitko.disabled = false;
-      const jmeno = formular.jmeno.value;
-      otevriFormular(idAkce);
-      const novyFormular = document.querySelector(`.dk-akce[data-id="${idAkce}"] .dk-prihlaska`);
-      novyFormular.jmeno.value = jmeno;
-      vybrane.forEach((id) => {
-        const pole = novyFormular.querySelector(`input[name=hra][value="${id}"]`);
-        if (pole) pole.checked = true;
-      });
-      zobrazHlasku(novyFormular.querySelector(".chyba"), "Heslo skupiny se změnilo, zadej prosím nové.");
+      ulozHeslo("");
+      zobrazBranu(HLASKY_CHYB.spatne_heslo);
       return;
     }
   }
@@ -565,7 +618,7 @@ async function nastavHeslo(udalost) {
   udalost.preventDefault();
   const pole = document.getElementById("nove-heslo");
   const heslo = pole.value.trim();
-  if (!heslo && !confirm("Zrušit heslo? Přihlásit se pak půjde bez hesla.")) return;
+  if (!heslo && !confirm("Zrušit heslo? Sekce Deskovky pak bude otevřená komukoli.")) return;
   const { error } = await sb.rpc("deskovky_nastav_heslo", { p_heslo: heslo });
   if (error) { zobrazToast("Nastavení hesla se nepovedlo."); return; }
   vyzadujeHeslo = !!heslo;
@@ -577,12 +630,12 @@ async function nastavHeslo(udalost) {
 
 function vykresliStavHesla(noveHeslo) {
   const stav = document.getElementById("stav-hesla");
-  if (!vyzadujeHeslo) { stav.textContent = "Teď se může přihlásit kdokoli bez hesla."; return; }
+  if (!vyzadujeHeslo) { stav.textContent = "Teď je sekce otevřená komukoli bez hesla."; return; }
   const heslo = noveHeslo || ulozeneHeslo();
   if (!heslo) { stav.textContent = "Heslo je nastavené."; return; }
   const odkaz = location.origin + location.pathname + "#heslo=" + encodeURIComponent(heslo);
   stav.innerHTML = `Heslo je nastavené: <strong>${esc(heslo)}</strong><br>
-    Odkaz, který heslo vyplní sám: <code class="dk-odkaz-heslo">${esc(odkaz)}</code>
+    Odkaz, který rovnou pustí dovnitř: <code class="dk-odkaz-heslo">${esc(odkaz)}</code>
     <button type="button" class="tlacitko-nenapadne" id="kopirovat-odkaz">zkopírovat</button>`;
   document.getElementById("kopirovat-odkaz").addEventListener("click", async () => {
     try { await navigator.clipboard.writeText(odkaz); zobrazToast("Odkaz zkopírovaný.", "uspech"); }
@@ -596,21 +649,21 @@ async function spustDeskovky() {
   if (!inicializujSupabase()) return;
   prevezmiHesloZOdkazu();
 
-  // Admin guildy, který je v tomhle prohlížeči přihlášený, uvidí správu
+  // Přihlášený člen guildy heslo nezadává; admin navíc uvidí správu
   try {
     const { data: { session } } = await sb.auth.getSession();
+    jeClen = !!session;
     if (session) {
       const { data } = await sb.rpc("je_admin");
       jeAdmin = data === true;
     }
-  } catch (e) { jeAdmin = false; }
-
-  try {
-    const { data } = await sb.rpc("deskovky_vyzaduje_heslo");
-    vyzadujeHeslo = data === true;
-  } catch (e) { vyzadujeHeslo = false; }
+  } catch (e) { jeClen = false; jeAdmin = false; }
 
   if (jeAdmin) {
+    try {
+      const { data } = await sb.rpc("deskovky_vyzaduje_heslo");
+      vyzadujeHeslo = data === true;
+    } catch (e) { vyzadujeHeslo = false; }
     document.getElementById("sprava").hidden = false;
     document.getElementById("menu-sprava").hidden = false;
     document.getElementById("formular-akce").addEventListener("submit", ulozAkci);
@@ -622,18 +675,23 @@ async function spustDeskovky() {
   }
 
   document.getElementById("hledat-hru").addEventListener("input", vykresliHry);
+  document.getElementById("formular-brany").addEventListener("submit", odemkni);
 
   try {
-    await Promise.all([nactiHry(), nactiAkce()]);
+    await nactiData();
   } catch (e) {
+    if (jeChybaHesla(e)) {
+      const meloHeslo = !!ulozeneHeslo();
+      ulozHeslo("");
+      zobrazBranu(meloHeslo ? HLASKY_CHYB.spatne_heslo : "");
+      return;
+    }
     document.getElementById("seznam-akci").innerHTML =
       `<p class="nacitani">Kalendář se nepodařilo načíst. Zkus obnovit stránku.</p>`;
     document.getElementById("seznam-her").innerHTML = "";
     return;
   }
-  vykresliAkce();
-  vykresliHry();
-  if (jeAdmin) vykresliVyberHer();
+  zobrazObsah();
 }
 
 spustDeskovky();

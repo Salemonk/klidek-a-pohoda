@@ -8,14 +8,14 @@
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <meta name="theme-color" content="#12141c">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="stylesheet" href="css/styl.css?v=36">
+  <link rel="stylesheet" href="css/styl.css?v=38">
 </head>
 <body class="deskovky">
 
   <header class="hlavicka">
     <div class="obsah hlavicka-vnitrek">
       <a href="deskovky.html" class="logo">🎲 Desk<span>ovky</span></a>
-      <nav class="menu">
+      <nav class="menu" id="menu-sekce" hidden>
         <a href="#kalendar">Kalendář</a>
         <a href="#hry">Naše hry</a>
         <a href="#sprava" id="menu-sprava" hidden>Správa</a>
@@ -25,8 +25,24 @@
 
   <main class="clenska-stranka">
     <div class="obsah">
+      <!-- Vstup s heslem skupiny: jen pro návštěvníky bez účtu v guildě -->
+      <div class="panel-blok dk-brana" id="brana" hidden>
+        <h1>🎲 Deskovky</h1>
+        <p>Kalendář naší deskoherní skupiny. Pro vstup zadej heslo skupiny,
+        dá ti ho kdokoli z nás.</p>
+        <form id="formular-brany">
+          <label for="heslo-brany">Heslo skupiny</label>
+          <input type="password" id="heslo-brany" maxlength="100" required autocomplete="current-password">
+          <div id="chyba-brany" class="chyba"></div>
+          <button type="submit" class="tlacitko">Vstoupit</button>
+        </form>
+        <p class="poznamka">Člen guildy Klídek a pohoda? <a href="prihlaseni.html">Přihlas se svým účtem</a>
+        a heslo zadávat nemusíš.</p>
+      </div>
+
+      <div id="obsah-sekce">
       <h1>🎲 Kdy se hraje</h1>
-      <p class="dk-uvod">Přihlas se na hraní, stačí jméno nebo přezdívka a heslo naší skupiny, žádný účet.
+      <p class="dk-uvod">Přihlas se na hraní, stačí jméno nebo přezdívka, žádný účet.
       U každého hraní můžeš hlasovat, které hry bys chtěl hrát.</p>
 
       <!-- Správa: vidí jen admin -->
@@ -119,12 +135,13 @@
           <div id="seznam-probehlych"></div>
         </details>
       </section>
+      </div>
     </div>
   </main>
 
   <footer class="paticka">
     <div class="obsah">
-      <p>Jména přihlášených vidí každý návštěvník a 30 dní po hraní se sama smažou.
+      <p>Jména přihlášených vidí jen naše skupina a 30 dní po hraní se sama smažou.
       · <a href="ochrana-udaju.html#deskovky">Ochrana osobních údajů</a></p>
     </div>
   </footer>
@@ -132,6 +149,6 @@
   <script src="js/config.js?v=20"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/klient.js?v=27"></script>
-  <script src="js/deskovky.js?v=1"></script>
+  <script src="js/deskovky.js?v=2"></script>
 </body>
 </html>

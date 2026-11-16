@@ -439,10 +439,13 @@ Tabulky: `deskovky_hry` (seznam her, `zh_id` = ID na zatrolene-hry.cz),
 (jméno + `token_hash`), `deskovky_hlasy` (přihláška × hra, víc hlasů na
 člověka), `deskovky_nastaveni` (jediný řádek, otisk skupinového hesla).
 
-Zabezpečení: čtení `to anon, authenticated`, zápis do tabulek jen
-`je_admin()`. Role `anon` má odebrané INSERT/UPDATE/DELETE a sloupec
-`token_hash` není čitelný (column grant jen na id, akce_id, jmeno,
-vytvoreno, proto se přihlášky vždy čtou s výčtem sloupců, nikdy `*`).
+Zabezpečení: čtení tabulek jen `to authenticated` (přihlášení členové
+guildy, skript `deskovky-heslo-vstup.sql`), zápis do tabulek jen
+`je_admin()`. Role `anon` tabulky nečte vůbec: data dostane jen přes
+`deskovky_data(p_heslo)` (SECURITY DEFINER, vrací JSON ve stejném tvaru
+jako vnořený select pro členy). Sloupec `token_hash` není čitelný ani pro
+členy (column grant jen na id, akce_id, jmeno, vytvoreno, proto se
+přihlášky vždy čtou s výčtem sloupců, nikdy `*`).
 Návštěvník zapisuje jen přes SECURITY DEFINER funkce
 `deskovky_prihlasit` (heslo, kapacita, jméno 2 až 40 znaků, unikátní jméno
 na akci, max 20 přihlášek za 10 min na celém webu), `deskovky_zmenit_hlasy`
@@ -451,12 +454,20 @@ ho vygeneruje prohlížeč (32 náhodných bajtů), uloží do localStorage
 `kap-deskovky-prihlasky` ({id: kód}) a databáze drží jen SHA-256 otisk.
 Hlas jde započítat jen pro hru nabídnutou u dané akce (hlídá funkce).
 
-Skupinové heslo: admin ho nastaví na stránce (`deskovky_nastav_heslo`),
-prázdné = bez hesla. Web si správné heslo pamatuje v localStorage
-`kap-deskovky-heslo`; odkaz `deskovky.html#heslo=…` ho vyplní sám (část za
-# se neposílá na server a web ji hned smaže z adresního řádku). Pokusy
-o heslo nejsou omezené počtem, je to ochrana proti náhodnému spamu, ne proti
-cílenému útoku.
+Skupinové heslo: zadává se při VSTUPU do sekce (panel `#brana`, obsah
+stránky je do té doby skrytý v `#obsah-sekce`), ne u přihlášky. Admin ho
+nastaví na stránce (`deskovky_nastav_heslo`), prázdné = sekce otevřená
+všem. `deskovky_over_heslo()` vrací true pro každého přihlášeného člena
+guildy (`auth.uid()` není null), takže členové heslo nezadávají nikde.
+Web si správné heslo pamatuje v localStorage `kap-deskovky-heslo` a posílá
+ho i do `deskovky_prihlasit` (funkce ho kontroluje, aby šla obejít bránu
+jen voláním RPC). Když správce heslo změní, další načtení nebo přihláška
+vrátí `spatne_heslo` a web ukáže bránu znovu. Odkaz
+`deskovky.html#heslo=…` pustí rovnou dovnitř (část za # se neposílá na
+server a web ji hned smaže z adresního řádku). Pokusy o heslo nejsou
+omezené počtem, je to ochrana proti náhodnému spamu, ne proti cílenému
+útoku. Samotné HTML a obrázky her jsou veřejné, heslo chrání data
+(hraní, jména, hlasy).
 
 Spam navíc: skryté pole `web` (honeypot) ve formuláři, admin maže
 přihlášky (× u jména). Úklid: pg_cron job „deskovky-uklid“ (denně 4:30)

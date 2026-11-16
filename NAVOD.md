@@ -252,6 +252,9 @@ databázi doporučujeme čas od času ručně stáhnout přes SQL Editor.
   `deskovky.html`, bez vazby na guildu) včetně seznamu her. Hraní zakládá
   a skupinové heslo nastavuje admin guildy přímo na stránce Deskovky, když je
   přihlášený. Vyžaduje běžící `pripominky-akci.sql` (zapíná pg_cron).
+- `supabase/deskovky-heslo-vstup.sql`: heslo skupiny se zadává při vstupu do
+  sekce Deskovky (ne u přihlášky na hraní), přihlášení členové guildy heslo
+  nezadávají. Spustit až po `deskovky.sql`.
 
 **Přidání stratagemů po novém Warbondu:** otevřete `js/stratagemy-data.js`
 (obyčejný textový soubor), přidejte/odeberte položky v poli `STRATAGEMY`
