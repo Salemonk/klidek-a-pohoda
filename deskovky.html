@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deskovky | kalendář hraní</title>
+  <meta name="description" content="Kalendář naší deskoherní skupiny: kdy se hraje, kdo přijde a co se bude hrát.">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <meta name="theme-color" content="#12141c">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="css/styl.css?v=36">
+</head>
+<body class="deskovky">
+
+  <header class="hlavicka">
+    <div class="obsah hlavicka-vnitrek">
+      <a href="deskovky.html" class="logo">🎲 Desk<span>ovky</span></a>
+      <nav class="menu">
+        <a href="#kalendar">Kalendář</a>
+        <a href="#hry">Naše hry</a>
+        <a href="#sprava" id="menu-sprava" hidden>Správa</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="clenska-stranka">
+    <div class="obsah">
+      <h1>🎲 Kdy se hraje</h1>
+      <p class="dk-uvod">Přihlas se na hraní, stačí jméno nebo přezdívka a heslo naší skupiny, žádný účet.
+      U každého hraní můžeš hlasovat, které hry bys chtěl hrát.</p>
+
+      <!-- Správa: vidí jen admin -->
+      <div class="panel-blok dk-sprava" id="sprava" hidden>
+        <h2 id="nadpis-formulare-akce">Naplánovat hraní</h2>
+        <form id="formular-akce">
+          <label for="akce-nazev">Název</label>
+          <input type="text" id="akce-nazev" maxlength="100" required placeholder="Např. Páteční deskovky">
+
+          <div class="dk-dva-sloupce">
+            <div>
+              <label for="akce-datum">Datum a čas</label>
+              <input type="datetime-local" id="akce-datum" required>
+            </div>
+            <div>
+              <label for="akce-kapacita">Kapacita (nepovinné)</label>
+              <input type="number" id="akce-kapacita" min="1" max="50" placeholder="bez omezení">
+            </div>
+          </div>
+
+          <label for="akce-misto">Místo (nepovinné)</label>
+          <input type="text" id="akce-misto" maxlength="150" placeholder="Např. kavárna U Lípy">
+
+          <label for="akce-popis">Popis (nepovinné)</label>
+          <textarea id="akce-popis" rows="3" maxlength="1000"></textarea>
+
+          <label for="akce-hledat-hru">Hry k hlasování <span class="dk-pocet-vybranych" id="pocet-vybranych"></span></label>
+          <input type="text" id="akce-hledat-hru" placeholder="Hledat hru…" autocomplete="off">
+          <div class="dk-vyber-her" id="vyber-her"></div>
+
+          <div id="chyba-akce" class="chyba"></div>
+          <div class="dk-tlacitka">
+            <button type="submit" class="tlacitko" id="tlacitko-ulozit-akci">Vytvořit hraní</button>
+            <button type="button" class="tlacitko-obrys tlacitko-male" id="tlacitko-zrusit-upravu" hidden>Zrušit úpravu</button>
+          </div>
+        </form>
+
+        <details class="dk-nova-hra">
+          <summary>Heslo skupiny</summary>
+          <p class="akce-meta" id="stav-hesla"></p>
+          <form id="formular-hesla">
+            <label for="nove-heslo">Nové heslo (prázdné = zrušit heslo)</label>
+            <input type="text" id="nove-heslo" maxlength="100" autocomplete="off">
+            <button type="submit" class="tlacitko tlacitko-male">Uložit heslo</button>
+          </form>
+        </details>
+
+        <details class="dk-nova-hra">
+          <summary>Přidat hru do seznamu</summary>
+          <form id="formular-hry">
+            <label for="hra-nazev">Název hry</label>
+            <input type="text" id="hra-nazev" maxlength="120" required>
+            <div class="dk-dva-sloupce">
+              <div>
+                <label for="hra-rok">Rok vydání (nepovinné)</label>
+                <input type="number" id="hra-rok" min="1900" max="2100">
+              </div>
+              <div>
+                <label for="hra-odkaz">Odkaz na hru (nepovinné)</label>
+                <input type="text" id="hra-odkaz" maxlength="300" placeholder="https://www.zatrolene-hry.cz/…">
+              </div>
+            </div>
+            <div id="chyba-hry" class="chyba"></div>
+            <button type="submit" class="tlacitko tlacitko-male">Přidat hru</button>
+          </form>
+        </details>
+      </div>
+
+      <section class="panel-blok" id="kalendar">
+        <h2>Nejbližší hraní</h2>
+        <div id="seznam-akci">
+          <div class="skeleton-karta"><div class="skeleton-radek stredni"></div><div class="skeleton-radek kratky"></div><div class="skeleton-radek dlouhy"></div></div>
+        </div>
+      </section>
+
+      <section class="panel-blok" id="hry">
+        <h2>Naše hry</h2>
+        <input type="text" id="hledat-hru" placeholder="Hledat ve hrách…" autocomplete="off" aria-label="Hledat ve hrách">
+        <div class="dk-mrizka-her" id="seznam-her">
+          <div class="skeleton-karta"><div class="skeleton-radek stredni"></div></div>
+        </div>
+        <p class="poznamka">Obrázky krabic patří vydavatelům her. Náhledy pocházejí z databáze
+        <a href="https://www.zatrolene-hry.cz" target="_blank" rel="noopener">Zatrolené hry</a>,
+        kliknutím na hru se dostaneš na její stránku.</p>
+      </section>
+
+      <section class="panel-blok" id="probehle">
+        <details>
+          <summary><h2 class="dk-souhrn-nadpis">Proběhlé hraní</h2></summary>
+          <div id="seznam-probehlych"></div>
+        </details>
+      </section>
+    </div>
+  </main>
+
+  <footer class="paticka">
+    <div class="obsah">
+      <p>Jména přihlášených vidí každý návštěvník a 30 dní po hraní se sama smažou.
+      · <a href="ochrana-udaju.html#deskovky">Ochrana osobních údajů</a></p>
+    </div>
+  </footer>
+
+  <script src="js/config.js?v=20"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/klient.js?v=27"></script>
+  <script src="js/deskovky.js?v=1"></script>
+</body>
+</html>

@@ -40,6 +40,8 @@ chat.html             společný chat (realtime)
 prispevky.html        nástěnka: příspěvky s obrázky a reakcemi
 vyzvy.html            randomizer stratagemů Helldivers 2 (viz sekce Výzvy)
 galerie.html          galerie momentek: volná síň slávy se screenshoty
+deskovky.html         VEŘEJNÝ kalendář deskoherní skupiny (bez vazby na guildu,
+                      viz sekce Deskovky); js/deskovky.js, assets/deskovky/
 napoveda.html         nápověda pro nové členy (statická, odkaz z Přehledu,
                       není v menu; js/napoveda.js jen ověří přihlášení)
 css/styl.css          jediný stylový soubor, barvy přes CSS proměnné v :root
@@ -422,6 +424,49 @@ odebrat položky, novou podpůrnou zbraň zařadit do `zbran` nebo `zbran_batoh`
 podle toho, jestli zabírá záda), zvednout `?v=` u tohoto souboru i u
 `vyzvy.js`, nasadit batem. Žádný zásah do databáze
 není potřeba.
+
+## Deskovky (veřejný kalendář deskoherní skupiny)
+
+Stránka `deskovky.html` + `js/deskovky.js`, skript `supabase/deskovky.sql`.
+Samostatná sekce **bez vazby na guildu**: návštěvníci nemají účet, nejsou
+v menu členské sekce a index na stránku neodkazuje (sdílí se přímá adresa).
+Načítá `klient.js` jen kvůli pomocným funkcím (`esc`, `formatujDatum`,
+`pridejDoKalendare`, `zobrazToast`), `vyzadujPrihlaseni()` nevolá.
+
+Tabulky: `deskovky_hry` (seznam her, `zh_id` = ID na zatrolene-hry.cz),
+`deskovky_akce` (hraní, nepovinná kapacita, bez ní strop 30),
+`deskovky_akce_hry` (hry nabídnuté k hlasování), `deskovky_prihlasky`
+(jméno + `token_hash`), `deskovky_hlasy` (přihláška × hra, víc hlasů na
+člověka), `deskovky_nastaveni` (jediný řádek, otisk skupinového hesla).
+
+Zabezpečení: čtení `to anon, authenticated`, zápis do tabulek jen
+`je_admin()`. Role `anon` má odebrané INSERT/UPDATE/DELETE a sloupec
+`token_hash` není čitelný (column grant jen na id, akce_id, jmeno,
+vytvoreno, proto se přihlášky vždy čtou s výčtem sloupců, nikdy `*`).
+Návštěvník zapisuje jen přes SECURITY DEFINER funkce
+`deskovky_prihlasit` (heslo, kapacita, jméno 2 až 40 znaků, unikátní jméno
+na akci, max 20 přihlášek za 10 min na celém webu), `deskovky_zmenit_hlasy`
+a `deskovky_odhlasit`. Ty dvě poslední ověřují tajný kód: při přihlášení
+ho vygeneruje prohlížeč (32 náhodných bajtů), uloží do localStorage
+`kap-deskovky-prihlasky` ({id: kód}) a databáze drží jen SHA-256 otisk.
+Hlas jde započítat jen pro hru nabídnutou u dané akce (hlídá funkce).
+
+Skupinové heslo: admin ho nastaví na stránce (`deskovky_nastav_heslo`),
+prázdné = bez hesla. Web si správné heslo pamatuje v localStorage
+`kap-deskovky-heslo`; odkaz `deskovky.html#heslo=…` ho vyplní sám (část za
+# se neposílá na server a web ji hned smaže z adresního řádku). Pokusy
+o heslo nejsou omezené počtem, je to ochrana proti náhodnému spamu, ne proti
+cílenému útoku.
+
+Spam navíc: skryté pole `web` (honeypot) ve formuláři, admin maže
+přihlášky (× u jména). Úklid: pg_cron job „deskovky-uklid“ (denně 4:30)
+maže přihlášky 30 dní po hraní, akce v Proběhlých zůstává.
+
+Obrázky her: zmenšené náhledy (300 px) ze zatrolene-hry.cz uložené
+v repozitáři `assets/deskovky/<zh_id>.jpg`, u každé hry odkaz na její
+stránku tam. Na cizí server se schválně neodkazuje přímo (soukromí
+návštěvníků, zátěž). Ručně přidaná hra obrázek nemá, místo něj se ukáže
+dlaždice s počátečním písmenem (stejně jako u rozbitého obrázku).
 
 ## Provoz a údržba
 

@@ -248,6 +248,10 @@ databázi doporučujeme čas od času ručně stáhnout přes SQL Editor.
   závislostí, jde spustit kdykoli.
 - `supabase/galerie.sql`: galerie momentek (stránka Galerie), volná
   bez vazby na konkrétní akci. Vyžaduje běžící `role-vedeni-a-upravy.sql`.
+- `supabase/deskovky.sql`: veřejný kalendář deskoherní skupiny (stránka
+  `deskovky.html`, bez vazby na guildu) včetně seznamu her. Hraní zakládá
+  a skupinové heslo nastavuje admin guildy přímo na stránce Deskovky, když je
+  přihlášený. Vyžaduje běžící `pripominky-akci.sql` (zapíná pg_cron).
 
 **Přidání stratagemů po novém Warbondu:** otevřete `js/stratagemy-data.js`
 (obyčejný textový soubor), přidejte/odeberte položky v poli `STRATAGEMY`

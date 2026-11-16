@@ -1211,3 +1211,206 @@ select.volba-role {
      názvem kategorie na mobilu zabíral i 4 řádky */
   .vyzva-slot .stitek { display: none; }
 }
+
+/* ---------- Deskovky (veřejný kalendář deskoherní skupiny) ---------- */
+
+input[type="number"] {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  background: var(--panel-svetly);
+  color: var(--text);
+  border: 1px solid var(--ohraniceni);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+.deskovky #hledat-hru { width: 100%; }
+
+.deskovky #kalendar, .deskovky #hry, .deskovky #sprava { scroll-margin-top: 80px; }
+.dk-uvod { color: var(--text-tlumeny); margin: -0.6rem 0 1.4rem; max-width: 640px; }
+.dk-dva-sloupce { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+.dk-tlacitka { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 12px; }
+.dk-podnadpis { font-weight: 700; margin: 14px 0 8px; }
+
+/* Karta hraní */
+.dk-akce-hlava { display: flex; align-items: flex-start; gap: 14px; }
+.dk-akce-info { flex: 1; min-width: 0; }
+.dk-kalendarik {
+  flex-shrink: 0;
+  width: 62px;
+  border-radius: 10px;
+  overflow: hidden;
+  text-align: center;
+  background: var(--panel);
+  border: 1px solid var(--ohraniceni);
+  line-height: 1.15;
+}
+.dk-den-tydne {
+  display: block;
+  background: var(--akcent-2);
+  color: var(--text-na-akcentu);
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 3px 0;
+}
+.dk-den { display: block; font-size: 1.6rem; font-weight: 800; padding-top: 4px; }
+.dk-mesic { display: block; font-size: 0.8rem; color: var(--text-tlumeny); padding-bottom: 6px; }
+.dk-obsazenost {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--akcent);
+  border: 1px solid var(--akcent);
+  border-radius: 999px;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+.dk-obsazenost.plno { color: var(--akcent-2); border-color: var(--akcent-2); }
+
+/* Výsledky hlasování */
+.dk-hlasovani { margin-top: 6px; }
+.dk-hra-hlas { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.dk-hra-hlas-obr { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
+.dk-hra-hlas-text { flex: 1; min-width: 0; font-size: 0.95rem; }
+.dk-hra-hlas-text a { color: var(--text); text-decoration: none; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dk-hra-hlas-text a:hover { color: var(--akcent); text-decoration: underline; }
+.dk-odkaz-heslo { word-break: break-all; color: var(--akcent); }
+#stav-hesla { margin-bottom: 10px; }
+.dk-hra-hlas-text span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dk-pruh { height: 6px; border-radius: 3px; background: var(--panel); margin-top: 4px; overflow: hidden; }
+.dk-pruh i { display: block; height: 100%; background: var(--akcent); border-radius: 3px; transition: width 0.3s ease; }
+
+/* Přihlášení lidé */
+.dk-lide { margin-top: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.dk-clovek {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--panel);
+  border: 1px solid var(--ohraniceni);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.9rem;
+}
+.dk-clovek.ja { border-color: var(--akcent); color: var(--akcent); font-weight: 700; }
+.dk-smazat-cloveka, .dk-smazat-hru {
+  background: none;
+  border: none;
+  color: var(--chyba);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 2px;
+}
+.dk-stav { margin: 0; }
+.dk-admin-tlacitka { display: flex; gap: 6px; justify-content: flex-end; margin-top: 8px; }
+
+/* Formulář přihlášky */
+.dk-prihlaska {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--ohraniceni);
+}
+.dk-past { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.dk-volby, .dk-vyber-her {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+.dk-vyber-her { max-height: 320px; overflow-y: auto; margin-bottom: 14px; padding: 2px; }
+.dk-volba {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid var(--ohraniceni);
+  border-radius: 8px;
+  background: var(--panel);
+  cursor: pointer;
+  font-weight: 500 !important;
+  font-size: 0.9rem !important;
+  margin: 0 !important;
+}
+.dk-volba:hover { border-color: var(--akcent); }
+.dk-volba:has(input:checked), .dk-volba.vybrano { border-color: var(--akcent); background: rgba(85, 183, 232, 0.14); }
+.dk-volba input { accent-color: var(--akcent); flex-shrink: 0; }
+.dk-volba-obr { width: 36px; height: 36px; border-radius: 5px; object-fit: cover; flex-shrink: 0; }
+.dk-volba span:last-child { overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.dk-pocet-vybranych { color: var(--akcent); font-weight: 600; }
+
+/* Seznam her */
+.dk-mrizka-her {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 14px;
+}
+.dk-hra { position: relative; }
+.dk-hra-odkaz {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--text);
+  text-decoration: none;
+  height: 100%;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: border-color 0.15s, background 0.15s;
+}
+a.dk-hra-odkaz:hover { border-color: var(--ohraniceni); background: var(--panel-svetly); }
+.dk-hra-obr {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  background: var(--panel-svetly);
+  border-radius: 8px;
+}
+.dk-hra-nazev { font-weight: 700; font-size: 0.92rem; line-height: 1.3; }
+.dk-smazat-hru {
+  position: absolute;
+  top: 4px; right: 4px;
+  background: var(--panel);
+  border-radius: 50%;
+  width: 26px; height: 26px;
+}
+
+/* Náhradní dlaždice, když hra nemá obrázek */
+.dk-nahradni {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--akcent-tmavy), var(--panel-svetly));
+  color: var(--text);
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+.dk-hra-obr.dk-nahradni { font-size: 2.6rem; }
+
+/* Proběhlé hraní */
+.dk-souhrn-nadpis { display: inline; margin: 0 !important; }
+#probehle summary { cursor: pointer; }
+#seznam-probehlych { margin-top: 12px; }
+.dk-probehle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--ohraniceni);
+}
+.dk-probehle:last-child { border-bottom: none; }
+
+.dk-nova-hra { margin-top: 20px; border-top: 1px solid var(--ohraniceni); padding-top: 14px; }
+.dk-nova-hra summary { cursor: pointer; font-weight: 700; margin-bottom: 10px; }
+
+@media (max-width: 600px) {
+  .dk-dva-sloupce { grid-template-columns: 1fr; }
+  .dk-akce-hlava { flex-wrap: wrap; }
+  .dk-akce-info { flex-basis: calc(100% - 76px); }
+  .dk-obsazenost { order: 3; margin-left: 76px; }
+  .dk-mrizka-her { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+  .dk-volby { grid-template-columns: 1fr; }
+}
